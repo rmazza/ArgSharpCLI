@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using ArgSharpCLI.Attributes;
+using ArgSharpCLI.ExceptionHandling;
 using ArgSharpCLI.Interfaces;
 using ICommand = ArgSharpCLI.Interfaces.ICommand;
 

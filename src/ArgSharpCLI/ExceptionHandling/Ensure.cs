@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace ArgSharpCLI;
+namespace ArgSharpCLI.ExceptionHandling;
 
 internal static class Ensure
 {
