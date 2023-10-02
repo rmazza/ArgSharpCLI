@@ -1,0 +1,16 @@
+{
+  "version": 2,
+  "dgSpecHash": "zZ8JT1Y0O5k0QHsmdlJ0jF+S5wZBa2O3xTN6wJYQlYkR6j9Ywl3sSOjObw+W+11SCs7FukzvABeDy1e90I0dgA==",
+  "success": true,
+  "projectFilePath": "C:\\dev\\ArgSharpCLI\\ArgSharpCLI.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\bandt\\.nuget\\packages\\microsoft.extensions.configuration.abstractions\\7.0.0\\microsoft.extensions.configuration.abstractions.7.0.0.nupkg.sha512",
+    "C:\\Users\\bandt\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\7.0.1\\microsoft.extensions.logging.abstractions.7.0.1.nupkg.sha512",
+    "C:\\Users\\bandt\\.nuget\\packages\\microsoft.extensions.primitives\\7.0.0\\microsoft.extensions.primitives.7.0.0.nupkg.sha512",
+    "C:\\Users\\bandt\\.nuget\\packages\\system.buffers\\4.5.1\\system.buffers.4.5.1.nupkg.sha512",
+    "C:\\Users\\bandt\\.nuget\\packages\\system.memory\\4.5.5\\system.memory.4.5.5.nupkg.sha512",
+    "C:\\Users\\bandt\\.nuget\\packages\\system.numerics.vectors\\4.4.0\\system.numerics.vectors.4.4.0.nupkg.sha512",
+    "C:\\Users\\bandt\\.nuget\\packages\\system.runtime.compilerservices.unsafe\\6.0.0\\system.runtime.compilerservices.unsafe.6.0.0.nupkg.sha512"
+  ],
+  "logs": []
+}
