@@ -3,9 +3,14 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.7.34031.279
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArgSharpCLI", ".\src\ArgSharpCLI\ArgSharpCLI.csproj", "{4AA1D3B8-C83D-427D-AB40-DE3786152E61}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArgSharpCLI", "src\ArgSharpCLI\ArgSharpCLI.csproj", "{4AA1D3B8-C83D-427D-AB40-DE3786152E61}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArgSharpCLI.Tests", ".\src\ArgSharpCLI.Tests\ArgSharpCLI.Tests.csproj", "{C02D1E32-2F2E-44B7-9793-55034049BD94}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArgSharpCLI.Tests", "src\ArgSharpCLI.Tests\ArgSharpCLI.Tests.csproj", "{C02D1E32-2F2E-44B7-9793-55034049BD94}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{82511964-B3DF-41C5-A868-FFDF1581C516}"
+	ProjectSection(SolutionItems) = preProject
+		Directory.Packages.props = Directory.Packages.props
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
