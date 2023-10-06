@@ -4,6 +4,8 @@ using System.Linq;
 using ArgSharpCLI.Attributes;
 using ArgSharpCLI.ExceptionHandling;
 using ArgSharpCLI.Interfaces;
+using LanguageExt;
+using LanguageExt.Common;
 using ICommand = ArgSharpCLI.Interfaces.ICommand;
 
 namespace ArgSharpCLI;
@@ -34,24 +36,26 @@ public class CommandRunnerBuilder : ICommandRunnerBuilder
         return this;
     }
 
-    public ICommand Build()
+    public Result<ICommand> Build()
     {
         bool isOptionBeforeCommand = _arguments[0].StartsWith("-");
 
         if (isOptionBeforeCommand)
         {
-            // Todo: implement cli option, ie (help, version)
-        }
 
+            // Todo: implement cli option, ie (help, version)
+            return new Result<ICommand>(new NotImplementedException("Options before command are not yet implemented"));
+        }
+        
         var strCommand = _arguments[0];
 
-        if (_commands.TryGetValue(strCommand, out var command) 
+        if (_commands.TryGetValue(strCommand, out var command)
             && Activator.CreateInstance(command) is ICommand cmd)
         {
-            return cmd;
+            return new Result<ICommand>(cmd);
         }
 
-        return null;
+        return new Result<ICommand>(new CommandNotFoundException());
     }
-
 }
+   

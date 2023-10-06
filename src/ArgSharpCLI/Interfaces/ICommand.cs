@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace ArgSharpCLI.Interfaces;
 
 public interface ICommand

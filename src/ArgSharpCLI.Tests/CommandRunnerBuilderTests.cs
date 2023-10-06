@@ -1,3 +1,7 @@
+using ArgSharpCLI.Interfaces;
+using LanguageExt;
+using LanguageExt.Pipes;
+
 namespace ArgSharpCLI.Tests;
 
 public class CommandRunnerBuilderTests
@@ -12,7 +16,18 @@ public class CommandRunnerBuilderTests
                 .AddCommand<TestCommand>()
                 .Build();
 
-        Assert.IsType<TestCommand>(commandToRun);
+        commandToRun.Match(
+                Succ: command =>
+                {
+                    Assert.IsType<TestCommand>(command);
+                    return Unit.Default;
+                },
+                Fail: ex =>
+                {
+                    Assert.Fail(ex.Message);
+                    return Unit.Default;
+                }
+            );
     }
 
     [Fact]
@@ -23,7 +38,19 @@ public class CommandRunnerBuilderTests
                 .AddCommand<TestCommand>()
                 .Build();
 
-        Assert.Throws<NotImplementedException>(() => commandToRun.Run());
+        commandToRun.Match(
+            Succ: command =>
+            {         
+                Assert.Throws<NotImplementedException>(() => command.Run());         
+                return Unit.Default;
+            },
+            Fail: ex =>
+            {
+
+                Assert.Fail(ex.Message);
+                return Unit.Default;
+            }
+        );
     }
 
     [Fact]
@@ -34,6 +61,18 @@ public class CommandRunnerBuilderTests
                 .AddCommand<TestCommand>()
                 .Build();
 
-        Assert.Throws<NotImplementedException>(() => commandToRun.Print());
+        commandToRun.Match(
+            Succ: command =>
+            {
+                Assert.Throws<NotImplementedException>(() => command.Print());
+                return Unit.Default;
+            },
+            Fail: ex =>
+            {
+
+                Assert.Fail(ex.Message);
+                return Unit.Default;
+            }
+        );
     }
 }
