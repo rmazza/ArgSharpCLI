@@ -10,12 +10,12 @@ using ICommand = ArgSharpCLI.Interfaces.ICommand;
 
 namespace ArgSharpCLI;
 
-public class CommandRunnerBuilder : ICommandRunnerBuilder
+public class CommandBuilder : ICommandBuilder
 {
     private readonly Dictionary<string, Type> _commands = new();
     private readonly List<string> _arguments = new();
 
-    public ICommandRunnerBuilder AddArguments(string[] args)
+    public ICommandBuilder AddArguments(string[] args)
     {
         Ensure.IsNotNull(args, nameof(args));
 
@@ -23,7 +23,7 @@ public class CommandRunnerBuilder : ICommandRunnerBuilder
         return this;
     }
 
-    public ICommandRunnerBuilder AddCommand<T>() where T : ICommand
+    public ICommandBuilder AddCommand<T>() where T : ICommand
     {
         CommandAttribute? attribute = typeof(T)
             .GetCustomAttributes(false)
