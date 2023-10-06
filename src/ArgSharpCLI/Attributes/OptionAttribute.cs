@@ -1,9 +1,12 @@
 ﻿using System;
+using ArgSharpCLI.Interfaces;
 
 namespace ArgSharpCLI.Attributes
 {
-    public class OptionAttribute : Attribute
-    {
+
+    [AttributeUsage(AttributeTargets.Property)]
+    public class OptionAttribute : Attribute, IOptionAttribute
+        {
         public string LongName { get; }
         public string ShortName { get; }
         public string Description { get; }

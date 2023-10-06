@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
 using ArgSharpCLI.Attributes;
 using ArgSharpCLI.ExceptionHandling;
 using ArgSharpCLI.Interfaces;
@@ -52,10 +55,30 @@ public class CommandBuilder : ICommandBuilder
         if (_commands.TryGetValue(strCommand, out var command)
             && Activator.CreateInstance(command) is ICommand cmd)
         {
+            BuildOptions(cmd, _arguments);
             return new Result<ICommand>(cmd);
         }
 
         return new Result<ICommand>(new CommandNotFoundException());
+    }
+
+    public static void BuildOptions(ICommand cmd, List<string> args)
+    {
+        var optionProperties = cmd.GetType()
+                                  .GetProperties()
+                                  .Where(property => Attribute.IsDefined(property, typeof(IOptionAttribute)));
+
+        foreach (var property in optionProperties)
+        {
+            IOptionAttribute attribute = property.Get
+            var index = args.IndexOf(attribute.LongName);
+
+            if (index != -1 && index + 1 < args.Count)
+            {
+                // Assigning the next value after the flag to the property
+                property.SetValue(cmd, args[index + 1]);
+            }
+        }
     }
 }
    
