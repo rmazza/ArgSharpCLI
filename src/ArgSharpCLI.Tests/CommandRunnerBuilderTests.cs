@@ -11,7 +11,7 @@ public class CommandRunnerBuilderTests
     [Fact]
     public void Build_WithPingArgument_ReturnsPingCommandInstance()
     {
-        var commandToRun = new CommandRunnerBuilder()
+        var commandToRun = new CommandBuilder()
                 .AddArguments(_args)
                 .AddCommand<TestCommand>()
                 .Build();
@@ -33,7 +33,7 @@ public class CommandRunnerBuilderTests
     [Fact]
     public void Build_WithPingArgument_ReturnsPingCommand_RunThrowsNotImplementedException()
     {
-        var commandToRun = new CommandRunnerBuilder()
+        var commandToRun = new CommandBuilder()
                 .AddArguments(_args)
                 .AddCommand<TestCommand>()
                 .Build();
@@ -56,7 +56,7 @@ public class CommandRunnerBuilderTests
     [Fact]
     public void Build_WithPingArgument_ReturnsPingCommand_PrintThrowsNotImplementedException()
     {
-        var commandToRun = new CommandRunnerBuilder()
+        var commandToRun = new CommandBuilder()
                 .AddArguments(_args)
                 .AddCommand<TestCommand>()
                 .Build();
