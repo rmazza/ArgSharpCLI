@@ -75,4 +75,33 @@ public class CommandRunnerBuilderTests
             }
         );
     }
+
+    [Fact]
+    public void Build_WithPingArgument_ReturnsPingCommand_WithLongOptionSet()
+    {
+        var expectedOptionValue = "test value";
+        var args = new string[] { "test", "--test-option", expectedOptionValue };
+        var commandToRun = new CommandBuilder()
+                .AddArguments(args)
+                .AddCommand<TestCommand>()
+                .Build();
+
+        commandToRun.Match(
+            Succ: command =>
+            {
+                Assert.IsType<TestCommand>(command);
+                if (command is TestCommand testCommand)
+                {
+                Assert.Equal(expectedOptionValue, testCommand.TestOption);
+                }
+                return Unit.Default;
+            },
+            Fail: ex =>
+            {
+
+                Assert.Fail(ex.Message);
+                return Unit.Default;
+            }
+        );
+    }
 }

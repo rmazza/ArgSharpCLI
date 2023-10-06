@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using ArgSharpCLI.Attributes;
 using ArgSharpCLI.ExceptionHandling;
+using ArgSharpCLI.Extensions;
 using ArgSharpCLI.Interfaces;
 using LanguageExt;
 using LanguageExt.Common;
@@ -66,12 +67,21 @@ public class CommandBuilder : ICommandBuilder
     {
         var optionProperties = cmd.GetType()
                                   .GetProperties()
-                                  .Where(property => Attribute.IsDefined(property, typeof(IOptionAttribute)));
+                                  .GetOptionProperties();
 
         foreach (var property in optionProperties)
         {
-            IOptionAttribute attribute = property.Get
-            var index = args.IndexOf(attribute.LongName);
+            IOptionAttribute attribute = property.GetOptionAttribute();
+            var index = args.IndexOf($"--{attribute.LongName}");
+            if (index == -1)
+            {
+                index = args.IndexOf($"-{ attribute.ShortName}");
+            }
+
+            if (property.PropertyType == typeof(bool))
+            {
+
+            }
 
             if (index != -1 && index + 1 < args.Count)
             {
