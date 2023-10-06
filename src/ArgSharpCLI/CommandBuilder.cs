@@ -78,12 +78,11 @@ public class CommandBuilder : ICommandBuilder
                 index = args.IndexOf($"-{ attribute.ShortName}");
             }
 
-            if (property.PropertyType == typeof(bool))
+            if (index != -1 && property.PropertyType == typeof(bool))
             {
-
+                property.SetValue(cmd, true);
             }
-
-            if (index != -1 && index + 1 < args.Count)
+            else if (index != -1 && index + 1 < args.Count)
             {
                 // Assigning the next value after the flag to the property
                 property.SetValue(cmd, args[index + 1]);
