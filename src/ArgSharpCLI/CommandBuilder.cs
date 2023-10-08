@@ -65,28 +65,89 @@ public class CommandBuilder : ICommandBuilder
 
     public static void BuildOptions(ICommand cmd, List<string> args)
     {
+        var optionDictionary = new Dictionary<string, PropertyInfo>();
+
         var optionProperties = cmd.GetType()
                                   .GetProperties()
                                   .GetOptionProperties();
 
-        foreach (var property in optionProperties)
+        foreach(var property in optionProperties)
         {
             IOptionAttribute attribute = property.GetOptionAttribute();
-            var index = args.IndexOf($"--{attribute.LongName}");
-            if (index == -1)
+
+            if (string.IsNullOrEmpty(attribute.LongName))
+                throw new Exception("Long name attribute cannot be null");
+
+            optionDictionary.TryAdd(attribute.LongName, property);
+
+            if (!string.IsNullOrEmpty(attribute.ShortName))
+                optionDictionary.TryAdd(attribute.ShortName, property);
+        }
+
+        for(int i = 1; i < args.Count; i++) 
+        {
+            var argument = args[i];
+
+            if (argument.StartsWith("--") && optionDictionary.TryGetValue(argument[2..], out PropertyInfo property))
             {
-                index = args.IndexOf($"-{ attribute.ShortName}");
+                if (property.PropertyType == typeof(bool))
+                {
+                    property.SetValue(cmd, true);
+                    continue;
+                }
+
+                if (i == args.Count - 1)
+                    throw new Exception("No value provided for argument");
+
+                if (args[i + 1].StartsWith("-") || string.IsNullOrWhiteSpace(args[i + 1]))
+                    throw new Exception($"no value provided for {argument}");
+
+                property.SetValue(cmd, args[i++ + 1]);
+                
+                continue;
             }
 
-            if (index != -1 && property.PropertyType == typeof(bool))
+            if (argument.StartsWith("-"))
             {
-                property.SetValue(cmd, true);
+
             }
-            else if (index != -1 && index + 1 < args.Count)
-            {
-                // Assigning the next value after the flag to the property
-                property.SetValue(cmd, args[index + 1]);
-            }
+
+            throw new CommandNotFoundException($"{argument} is not a valid argument");
+
+        }
+
+        //// Todo: move into separate method
+        //foreach (var property in optionProperties)
+        //{
+        //    IOptionAttribute attribute = property.GetOptionAttribute();
+        //    var index = args.IndexOf($"--{attribute.LongName}");
+        //    if (index == -1)
+        //    {
+        //        index = args.IndexOf($"-{ attribute.ShortName}");
+        //    }
+
+        //    if (index != -1 && property.PropertyType == typeof(bool))
+        //    {
+        //        property.SetValue(cmd, true);
+        //    }
+        //    else if (index != -1 && index + 1 < args.Count)
+        //    {
+        //        // Assigning the next value after the flag to the property
+        //        property.SetValue(cmd, args[index + 1]);
+        //    }
+        //}
+    }
+
+    private static void SetValue(ICommand cmd, PropertyInfo prop, object value)
+    {
+        switch(prop.PropertyType)
+        {
+            case Type t when t == typeof(bool):
+                prop.SetValue(cmd, true);
+                break;
+            default:
+                prop.SetValue(cmd, value);
+                break;
         }
     }
 }
