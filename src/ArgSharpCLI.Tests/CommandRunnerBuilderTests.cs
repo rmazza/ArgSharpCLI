@@ -1,3 +1,4 @@
+using ArgSharpCLI.ExceptionHandling;
 using ArgSharpCLI.Interfaces;
 using LanguageExt;
 using LanguageExt.Pipes;
@@ -9,7 +10,7 @@ public class CommandRunnerBuilderTests
     private readonly string[] _args = { "test" };
 
     [Fact]
-    public void Build_WithPingArgument_ReturnsPingCommandInstance()
+    public void Build_WithTestArgument_ReturnsTestCommandInstance()
     {
         var commandToRun = new CommandBuilder()
                 .AddArguments(_args)
@@ -31,7 +32,7 @@ public class CommandRunnerBuilderTests
     }
 
     [Fact]
-    public void Build_WithPingArgument_ReturnsPingCommand_RunThrowsNotImplementedException()
+    public void Build_WithTestArgument_ReturnsTestCommand_RunThrowsNotImplementedException()
     {
         var commandToRun = new CommandBuilder()
                 .AddArguments(_args)
@@ -54,7 +55,7 @@ public class CommandRunnerBuilderTests
     }
 
     [Fact]
-    public void Build_WithPingArgument_ReturnsPingCommand_PrintThrowsNotImplementedException()
+    public void Build_WithTestArgument_ReturnsTestCommand_PrintThrowsNotImplementedException()
     {
         var commandToRun = new CommandBuilder()
                 .AddArguments(_args)
@@ -77,7 +78,7 @@ public class CommandRunnerBuilderTests
     }
 
     [Fact]
-    public void Build_WithPingArgument_ReturnsPingCommand_WithLongOptionStringSet()
+    public void Build_WithTestArgument_ReturnsTestCommand_WithLongOptionStringSet()
     {
         var expectedOptionValue = "test value";
         var args = new string[] { "test", "--test-option", expectedOptionValue };
@@ -109,7 +110,12 @@ public class CommandRunnerBuilderTests
     [InlineData(new [] { "test", "--test-option" }, typeof(Exception))]
     [InlineData(new [] { "test", "--test-option", " " }, typeof(Exception))]
     [InlineData(new[] { "test", "--test-option", "--test-boolean-option" }, typeof(Exception))]
-    public void Build_WithPingArgument_ReturnsPingCommand_WithLongOptionStringSet_WithNoValue(string[] args, Type exceptionType)
+    [InlineData(new[] { "test", "-bd" }, typeof(CommandNotFoundException))]
+    [InlineData(new[] { "test", "-bt" }, typeof(InvalidCommandException))]
+    [InlineData(new[] { "test", "-bt", "--test-boolean-option" }, typeof(InvalidCommandException))]
+    [InlineData(new[] { "test", "-tb" }, typeof(InvalidCommandException))]
+    [InlineData(new[] { "test", "-tb", "--test-option", "test command" }, typeof(InvalidCommandException))]
+    public void Build_WithTestArgument_ReturnsTestCommand_WithNoValue(string[] args, Type exceptionType)
     {
         Assert.Throws(exceptionType, () => new CommandBuilder()
                 .AddArguments(args)
@@ -118,7 +124,7 @@ public class CommandRunnerBuilderTests
     }
 
     [Fact]
-    public void Build_WithPingArgument_ReturnsPingCommand_WithLongOptionBoolSet()
+    public void Build_WithTestArgument_ReturnsTestCommand_WithLongOptionBoolSet()
     {
         bool expectedOptionValue = true;
         var args = new string[] { "test", "--test-boolean-option" };
@@ -133,7 +139,7 @@ public class CommandRunnerBuilderTests
                 Assert.IsType<TestCommand>(command);
                 if (command is TestCommand testCommand)
                 {
-                    Assert.Equal(expectedOptionValue, testCommand.TestBooleanOption);
+                    Assert.Equal(expectedOptionValue, testCommand.TestBooleanOption1);
                 }
                 return Unit.Default;
             },
@@ -149,7 +155,15 @@ public class CommandRunnerBuilderTests
     [Theory]
     [InlineData(new string[] { "test", "--test-boolean-option", "--test-option", "hello world" }, true, "hello world")]
     [InlineData(new string[] { "test", "--test-option", "hello world", "--test-boolean-option" }, true, "hello world")]
-    public void Build_WithPingArgument_ReturnsPingCommand_WithLongOptionStringAndBoolSet(string[] args, object expectedValue1, object expectedValue2)
+    [InlineData(new string[] { "test", "-b", "-t", "hello world" }, true, "hello world")]
+    [InlineData(new string[] { "test", "-b", "--test-option", "hello world" }, true, "hello world")]
+    [InlineData(new string[] { "test", "--test-option", "hello world", "-b" }, true, "hello world")]
+    [InlineData(new string[] { "test", "--test-boolean-option", "-t", "hello world" }, true, "hello world")]
+    [InlineData(new string[] { "test", "--test-boolean-option" }, true, null)]
+    [InlineData(new string[] { "test", "-b" }, true, null)]
+    [InlineData(new string[] { "test", "-t", "hello world" }, false, "hello world")]
+    [InlineData(new string[] { "test", "-bz" }, true, null, true)]
+    public void Build_WithTestArgument_ReturnsTestCommand_WithMixedOptionsSet(string[] args, object expectedBooleanValue, object expectedStringValue, object expectedBooleanOption2 = null)
     {
         var commandToRun = new CommandBuilder()
                 .AddArguments(args)
@@ -162,8 +176,10 @@ public class CommandRunnerBuilderTests
                 Assert.IsType<TestCommand>(command);
                 if (command is TestCommand testCommand)
                 {
-                    Assert.Equal(expectedValue1, testCommand.TestBooleanOption);
-                    Assert.Equal(expectedValue2, testCommand.TestOption);
+                    Assert.Equal(expectedBooleanValue, testCommand.TestBooleanOption1);
+
+                    if (expectedStringValue is not null)
+                        Assert.Equal(expectedStringValue, testCommand.TestOption);
                 }
                 return Unit.Default;
             },
@@ -175,4 +191,5 @@ public class CommandRunnerBuilderTests
             }
         );
     }
+
 }

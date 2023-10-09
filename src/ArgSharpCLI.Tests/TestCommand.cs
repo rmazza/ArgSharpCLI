@@ -10,7 +10,10 @@ public class TestCommand : ICommand
     public string? TestOption { get; set; }
 
     [Option("test-boolean-option", "b", "test boolean option")]
-    public bool TestBooleanOption { get; set; }
+    public bool TestBooleanOption1 { get; set; }
+
+    [Option("test-boolean-option-2", "z", "test boolean option 2")]
+    public bool TestBooleanOption2 { get; set; }
 
     public void Print() =>
         throw new NotImplementedException();
