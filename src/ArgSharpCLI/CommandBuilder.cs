@@ -1,15 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Security.Cryptography;
-using ArgSharpCLI.Attributes;
+﻿using ArgSharpCLI.Attributes;
 using ArgSharpCLI.ExceptionHandling;
 using ArgSharpCLI.Extensions;
 using ArgSharpCLI.Interfaces;
-using LanguageExt;
 using LanguageExt.Common;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using ICommand = ArgSharpCLI.Interfaces.ICommand;
 
 namespace ArgSharpCLI;
@@ -50,7 +47,7 @@ public class CommandBuilder : ICommandBuilder
             // Todo: implement cli option, ie (help, version)
             return new Result<ICommand>(new NotImplementedException("Options before command are not yet implemented"));
         }
-        
+
         var strCommand = _arguments[0];
 
         if (_commands.TryGetValue(strCommand, out var command)
@@ -71,7 +68,7 @@ public class CommandBuilder : ICommandBuilder
                                   .GetProperties()
                                   .GetOptionProperties();
 
-        foreach(var property in optionProperties)
+        foreach (var property in optionProperties)
         {
             IOptionAttribute attribute = property.GetOptionAttribute();
 
@@ -84,7 +81,7 @@ public class CommandBuilder : ICommandBuilder
                 optionDictionary.TryAdd(attribute.ShortName, property);
         }
 
-        for(int i = 1; i < args.Count; i++) 
+        for (int i = 1; i < args.Count; i++)
         {
             var argument = args[i];
 
@@ -103,52 +100,58 @@ public class CommandBuilder : ICommandBuilder
                     throw new Exception($"no value provided for {argument}");
 
                 property.SetValue(cmd, args[i++ + 1]);
-                
+
                 continue;
             }
 
+            // short hand parsing
             if (argument.StartsWith("-"))
             {
+                // all must be boolean properties to group shorthands
+                if (argument.Length > 2)
+                {
+                    foreach (var opt in argument[1..])
+                    {
+                        if (optionDictionary.TryGetValue(opt.ToString(), out PropertyInfo sp))
+                        {
+                            if (sp.PropertyType != typeof(bool))
+                                throw new InvalidCommandException("Grouping short hand properties must all be boolean types");
 
+                            sp.SetValue(cmd, true);
+                            continue;
+                        }
+
+                        throw new CommandNotFoundException($"{ opt } not found");
+                    }
+                }
+
+                string shortHandOption = argument[1].ToString();
+
+                if (optionDictionary.TryGetValue(shortHandOption, out PropertyInfo shortProperty))
+                {
+                    if (shortProperty.PropertyType == typeof(bool))
+                    {
+                        shortProperty.SetValue(cmd, true);
+                        continue;
+                    }
+
+                    if (i == args.Count - 1)
+                        throw new Exception("No value provided for argument");
+
+                    if (args[i + 1].StartsWith("-") || string.IsNullOrWhiteSpace(args[i + 1]))
+                        throw new Exception($"no value provided for {argument}");
+
+                    shortProperty.SetValue(cmd, args[i++ + 1]);
+                    continue;
+                }
+                else
+                {
+                    throw new CommandNotFoundException($"{shortHandOption} not found");
+                }
             }
 
             throw new CommandNotFoundException($"{argument} is not a valid argument");
 
         }
-
-        //// Todo: move into separate method
-        //foreach (var property in optionProperties)
-        //{
-        //    IOptionAttribute attribute = property.GetOptionAttribute();
-        //    var index = args.IndexOf($"--{attribute.LongName}");
-        //    if (index == -1)
-        //    {
-        //        index = args.IndexOf($"-{ attribute.ShortName}");
-        //    }
-
-        //    if (index != -1 && property.PropertyType == typeof(bool))
-        //    {
-        //        property.SetValue(cmd, true);
-        //    }
-        //    else if (index != -1 && index + 1 < args.Count)
-        //    {
-        //        // Assigning the next value after the flag to the property
-        //        property.SetValue(cmd, args[index + 1]);
-        //    }
-        //}
-    }
-
-    private static void SetValue(ICommand cmd, PropertyInfo prop, object value)
-    {
-        switch(prop.PropertyType)
-        {
-            case Type t when t == typeof(bool):
-                prop.SetValue(cmd, true);
-                break;
-            default:
-                prop.SetValue(cmd, value);
-                break;
-        }
     }
 }
-   
