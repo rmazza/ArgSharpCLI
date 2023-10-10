@@ -163,6 +163,8 @@ public class CommandRunnerBuilderTests
     [InlineData(new string[] { "test", "-b" }, true, null)]
     [InlineData(new string[] { "test", "-t", "hello world" }, false, "hello world")]
     [InlineData(new string[] { "test", "-bz" }, true, null, true)]
+    [InlineData(new string[] { "test", "-zb", "-t", "hello world" }, true, "hello world", true)]
+    [InlineData(new string[] { "test", "-zb", "--test-option", "hello world" }, true, "hello world", true)]
     public void Build_WithTestArgument_ReturnsTestCommand_WithMixedOptionsSet(string[] args, object expectedBooleanValue, object expectedStringValue, object expectedBooleanOption2 = null)
     {
         var commandToRun = new CommandBuilder()
@@ -180,6 +182,9 @@ public class CommandRunnerBuilderTests
 
                     if (expectedStringValue is not null)
                         Assert.Equal(expectedStringValue, testCommand.TestOption);
+
+                    if (expectedBooleanOption2 is not null)
+                        Assert.Equal(expectedBooleanOption2, testCommand.TestBooleanOption2);
                 }
                 return Unit.Default;
             },

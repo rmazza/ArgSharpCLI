@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using ICommand = ArgSharpCLI.Interfaces.ICommand;
 
 namespace ArgSharpCLI;
@@ -15,11 +16,13 @@ public class CommandBuilder : ICommandBuilder
 {
     private readonly Dictionary<string, Type> _commands = new();
     private readonly List<string> _arguments = new();
+    private readonly Queue<string> _argumentQueue = new();
 
     public ICommandBuilder AddArguments(string[] args)
     {
         Ensure.IsNotNull(args, nameof(args));
 
+        _argumentQueue.Append(args);
         _arguments.AddRange(args);
         return this;
     }
@@ -62,29 +65,13 @@ public class CommandBuilder : ICommandBuilder
 
     public static void BuildOptions(ICommand cmd, List<string> args)
     {
-        var optionDictionary = new Dictionary<string, PropertyInfo>();
-
-        var optionProperties = cmd.GetType()
-                                  .GetProperties()
-                                  .GetOptionProperties();
-
-        foreach (var property in optionProperties)
-        {
-            IOptionAttribute attribute = property.GetOptionAttribute();
-
-            if (string.IsNullOrEmpty(attribute.LongName))
-                throw new Exception("Long name attribute cannot be null");
-
-            optionDictionary.TryAdd(attribute.LongName, property);
-
-            if (!string.IsNullOrEmpty(attribute.ShortName))
-                optionDictionary.TryAdd(attribute.ShortName, property);
-        }
+        var optionDictionary = GetOptionAttributesFromCommandProperties(cmd);
 
         for (int i = 1; i < args.Count; i++)
         {
             var argument = args[i];
 
+            // Parse Long Option
             if (argument.StartsWith("--") && optionDictionary.TryGetValue(argument[2..], out PropertyInfo property))
             {
                 if (property.PropertyType == typeof(bool))
@@ -104,7 +91,7 @@ public class CommandBuilder : ICommandBuilder
                 continue;
             }
 
-            // short hand parsing
+            // Parse short Option
             if (argument.StartsWith("-"))
             {
                 // all must be boolean properties to group shorthands
@@ -121,7 +108,7 @@ public class CommandBuilder : ICommandBuilder
                             continue;
                         }
 
-                        throw new CommandNotFoundException($"{ opt } not found");
+                        throw new CommandNotFoundException($"{opt} not found");
                     }
                 }
 
@@ -153,5 +140,29 @@ public class CommandBuilder : ICommandBuilder
             throw new CommandNotFoundException($"{argument} is not a valid argument");
 
         }
+    }
+
+    private static IDictionary<string, PropertyInfo> GetOptionAttributesFromCommandProperties(ICommand cmd)
+    {
+        var optionDictionary = new Dictionary<string, PropertyInfo>();
+
+        var optionProperties = cmd.GetType()
+                                  .GetProperties()
+                                  .GetOptionProperties();
+
+        foreach (var property in optionProperties)
+        {
+            IOptionAttribute attribute = property.GetOptionAttribute();
+
+            if (string.IsNullOrEmpty(attribute.LongName))
+                throw new Exception("Long name attribute cannot be null");
+
+            optionDictionary.TryAdd(attribute.LongName, property);
+
+            if (!string.IsNullOrEmpty(attribute.ShortName))
+                optionDictionary.TryAdd(attribute.ShortName, property);
+        }
+
+        return optionDictionary;
     }
 }
