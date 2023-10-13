@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ArgSharpCLI.Interfaces;
+using System;
 using System.Linq;
 
 namespace ArgSharpCLI.ExceptionHandling;
@@ -9,5 +10,11 @@ internal static class Ensure
     {
         if (!args.Any())
             throw new ArgumentNullException(nameof(args), message);
+    }
+
+    public static void IsNotNull(object obj, string message)
+    {
+        if (obj is null)
+            throw new ArgumentNullException(message);
     }
 }

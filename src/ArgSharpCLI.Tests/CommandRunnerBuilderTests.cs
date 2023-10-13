@@ -55,29 +55,6 @@ public class CommandRunnerBuilderTests
     }
 
     [Fact]
-    public void Build_WithTestArgument_ReturnsTestCommand_PrintThrowsNotImplementedException()
-    {
-        var commandToRun = new CommandBuilder()
-                .AddArguments(_args)
-                .AddCommand<TestCommand>()
-                .Build();
-
-        commandToRun.Match(
-            Succ: command =>
-            {
-                Assert.Throws<NotImplementedException>(() => command.Print());
-                return Unit.Default;
-            },
-            Fail: ex =>
-            {
-
-                Assert.Fail(ex.Message);
-                return Unit.Default;
-            }
-        );
-    }
-
-    [Fact]
     public void Build_WithTestArgument_ReturnsTestCommand_WithLongOptionStringSet()
     {
         var expectedOptionValue = "test value";
@@ -128,6 +105,7 @@ public class CommandRunnerBuilderTests
     {
         bool expectedOptionValue = true;
         var args = new string[] { "test", "--test-boolean-option" };
+
         var commandToRun = new CommandBuilder()
                 .AddArguments(args)
                 .AddCommand<TestCommand>()

@@ -1,4 +1,5 @@
 ﻿using ArgSharpCLI.Attributes;
+using ArgSharpCLI.Commands;
 using ArgSharpCLI.ExceptionHandling;
 using ArgSharpCLI.Interfaces;
 using LanguageExt.Common;
@@ -18,19 +19,17 @@ public class CommandBuilder : ICommandBuilder
     {
         Ensure.IsNotNull(args, nameof(args));
 
-        foreach(var arg in args)
+        foreach (var arg in args)
             _argumentQueue.Enqueue(arg);
-      
+
         return this;
     }
 
     public ICommandBuilder AddCommand<T>() where T : ICommand
     {
-        CommandAttribute? attribute = typeof(T)
+        if (typeof(T)
             .GetCustomAttributes(false)
-            .SingleOrDefault(attr => attr is CommandAttribute) as CommandAttribute;
-
-        if (attribute is null)
+            .SingleOrDefault(attr => attr is CommandAttribute) is not CommandAttribute attribute)
             throw new InvalidOperationException($"The type {typeof(T).Name} must have a {nameof(CommandAttribute)}.");
 
         _commands.Add(attribute.Name, typeof(T));
@@ -39,29 +38,60 @@ public class CommandBuilder : ICommandBuilder
 
     public Result<ICommand> Build()
     {
-        if (!_argumentQueue.TryDequeue(out string argument))
+        var optionParser = new OptionParser(_argumentQueue);
+
+        ICommand? command = null;
+
+        if (optionParser.IsHelpRequested())
+        {
+            if (_argumentQueue.Count == 1)
+            {
+                return new Result<ICommand>(GenerateGlobalHelp());
+            }
+
+            command = GetCommandFromQueue();
+            if (command != null)
+            {
+                return new Result<ICommand>(GenerateSpecificHelp(command));
+            }
+
+        }
+
+        command = GetCommandFromQueue();
+
+        if (command is null)
             return new Result<ICommand>(new CommandNotFoundException());
 
-        bool isOptionBeforeCommand = argument.StartsWith("-");
+        optionParser
+            .SetCommand(command)
+            .BuildOptions();
 
-        if (isOptionBeforeCommand)
-        {
-
-            // Todo: implement cli option, ie (help, version)
-            return new Result<ICommand>(new NotImplementedException("Options before command are not yet implemented"));
-        }
-
-        var strCommand = argument;
-
-        if (_commands.TryGetValue(strCommand, out var command)
-            && Activator.CreateInstance(command) is ICommand cmd)
-        {
-            new OptionParser(cmd)
-                .BuildOptions(_argumentQueue);
-            return new Result<ICommand>(cmd);
-        }
-
-        return new Result<ICommand>(new CommandNotFoundException());
+        return new Result<ICommand>(command);
     }
-   
+
+    private ICommand GenerateGlobalHelp()
+    {
+        // Generate global help text based on registered commands
+        return new GlobalHelpCommand(_commands);
+    }
+
+    private ICommand GenerateSpecificHelp(ICommand cmd)
+    {
+        // Generate help text for a specific command based on its options
+        return cmd; // Or wrap it in a help-command decorator that prints its help info
+    }
+
+    private ICommand GetCommandFromQueue()
+    {
+        if (!_argumentQueue.TryPeek(out string argument))
+            return null;
+
+        if (_commands.TryGetValue(argument, out Type commandType) && Activator.CreateInstance(commandType) is ICommand cmd)
+        {
+            return cmd;
+        }
+
+        return null;
+    }
+
 }

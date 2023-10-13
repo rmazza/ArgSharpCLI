@@ -5,6 +5,12 @@ namespace ArgSharpCLI.Interfaces;
 public interface ICommand
 {
     void Run();
-    void Print();
+
+    string GetHelpText()
+    {
+        // Use reflection to gather and format option info
+        // return the formatted string
+        return string.Empty;
+    }
 }
 
