@@ -86,7 +86,7 @@ public class CommandBuilder : ICommandBuilder
 
     private ICommand GenerateSpecificHelp(ICommand cmd)
     {
-        return new HelpCommandDecorator(cmd);
+        return new HelpCommand(cmd);
     }
 
     private ICommand GetCommandFromQueue()

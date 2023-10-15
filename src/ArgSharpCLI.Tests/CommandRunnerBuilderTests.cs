@@ -181,7 +181,10 @@ public class CommandRunnerBuilderTests
 
     [Theory]
     [InlineData(new[] { "--help" }, typeof(GlobalHelpCommand))]
-    [InlineData(new[] { "test", "--help" }, typeof(HelpCommandDecorator))]
+    [InlineData(new[] { "test", "--help" }, typeof(HelpCommand))]
+    [InlineData(new[] { "test", "-h" }, typeof(HelpCommand))]
+    [InlineData(new[] { "test", "-bz", "-h" }, typeof(HelpCommand))]
+    [InlineData(new[] { "test", "-bz", "--help" }, typeof(HelpCommand))]
     public void Build_WithTestArgument_ReturnsHelpCommand(string[] args, Type typeReturned)
     {
         var commandToRun = new CommandBuilder()

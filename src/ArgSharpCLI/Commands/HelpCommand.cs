@@ -7,11 +7,11 @@ using System.Text;
 
 namespace ArgSharpCLI.Commands;
 
-public class HelpCommandDecorator : ICommand
+public class HelpCommand : ICommand
 {
     private readonly ICommand _innerCommand;
 
-    public HelpCommandDecorator(ICommand innerCommand)
+    public HelpCommand(ICommand innerCommand)
     {
         _innerCommand = innerCommand;
     }
