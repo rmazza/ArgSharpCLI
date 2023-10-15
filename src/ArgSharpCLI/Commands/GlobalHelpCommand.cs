@@ -1,8 +1,8 @@
-﻿using ArgSharpCLI.Attributes;
+﻿using ArgSharpCLI.Extensions;
 using ArgSharpCLI.Interfaces;
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics;
 using System.Text;
 
 namespace ArgSharpCLI.Commands;
@@ -19,25 +19,23 @@ public class GlobalHelpCommand : ICommand
     public string GetHelpText()
     {
         var helpText = new StringBuilder();
-        helpText.Append("Available commands:\n");
+        helpText.Append("Global Options:\n");
+        helpText.Append("  -h|--help        Show command line help.\n");
+
+        helpText.Append("\nAvailable commands:\n");
 
         foreach (var cmd in _commands)
         {
-            helpText.Append($"- {cmd.Key}\n");
+            var commandAttribute = cmd.Value.GetCommandAttribute();
+
+            helpText.Append($"  {commandAttribute.Name}             {commandAttribute.Description}\n");
         }
 
         return helpText.ToString();
     }
-
-    public void Print()
-    {
-        throw new NotImplementedException();
-    }
-
     public void Run()
     {
-        throw new NotImplementedException();
+        Debug.WriteLine( GetHelpText() );
+        Console.WriteLine(GetHelpText());
     }
-
-    // ... other ICommand implementations
 }

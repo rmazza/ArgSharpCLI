@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "ArgSharpCLI": {
+      "commandName": "Project",
+      "commandLineArgs": "--help"
+    }
+  }
+}

@@ -1,14 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using ArgSharpCLI.Interfaces;
+using System;
 
 namespace ArgSharpCLI.Attributes;
-
-public interface ICommandAttribute
-{
-    string Name { get; }
-    string Description { get; set;  }
-}
 
 [AttributeUsage(AttributeTargets.Class)]
 public class CommandAttribute : Attribute, ICommandAttribute

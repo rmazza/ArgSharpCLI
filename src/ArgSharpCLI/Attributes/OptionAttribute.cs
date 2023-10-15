@@ -6,7 +6,7 @@ namespace ArgSharpCLI.Attributes
 
     [AttributeUsage(AttributeTargets.Property)]
     public class OptionAttribute : Attribute, IOptionAttribute
-        {
+    {
         public string LongName { get; }
         public string ShortName { get; }
         public string Description { get; }
@@ -16,6 +16,11 @@ namespace ArgSharpCLI.Attributes
             LongName = longName;
             ShortName = shortName;
             Description = description;
+        }
+
+        public override string ToString()
+        {
+            return $"-{ShortName}|--{LongName}";
         }
     }
 }

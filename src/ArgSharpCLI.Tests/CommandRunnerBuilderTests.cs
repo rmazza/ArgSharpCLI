@@ -1,7 +1,9 @@
+using ArgSharpCLI.Commands;
 using ArgSharpCLI.ExceptionHandling;
 using ArgSharpCLI.Interfaces;
 using LanguageExt;
 using LanguageExt.Pipes;
+using System.Runtime.CompilerServices;
 
 namespace ArgSharpCLI.Tests;
 
@@ -84,14 +86,15 @@ public class CommandRunnerBuilderTests
     }
 
     [Theory]
-    [InlineData(new [] { "test", "--test-option" }, typeof(Exception))]
-    [InlineData(new [] { "test", "--test-option", " " }, typeof(Exception))]
+    [InlineData(new[] { "test", "--test-option" }, typeof(Exception))]
+    [InlineData(new[] { "test", "--test-option", " " }, typeof(Exception))]
     [InlineData(new[] { "test", "--test-option", "--test-boolean-option" }, typeof(Exception))]
     [InlineData(new[] { "test", "-bd" }, typeof(CommandNotFoundException))]
     [InlineData(new[] { "test", "-bt" }, typeof(InvalidCommandException))]
     [InlineData(new[] { "test", "-bt", "--test-boolean-option" }, typeof(InvalidCommandException))]
     [InlineData(new[] { "test", "-tb" }, typeof(InvalidCommandException))]
     [InlineData(new[] { "test", "-tb", "--test-option", "test command" }, typeof(InvalidCommandException))]
+
     public void Build_WithTestArgument_ReturnsTestCommand_WithNoValue(string[] args, Type exceptionType)
     {
         Assert.Throws(exceptionType, () => new CommandBuilder()
@@ -175,4 +178,23 @@ public class CommandRunnerBuilderTests
         );
     }
 
+
+    [Theory]
+    [InlineData(new[] { "--help" }, typeof(GlobalHelpCommand))]
+    [InlineData(new[] { "test", "--help" }, typeof(HelpCommandDecorator))]
+    public void Build_WithTestArgument_ReturnsHelpCommand(string[] args, Type typeReturned)
+    {
+        var commandToRun = new CommandBuilder()
+        .AddArguments(args)
+        .AddCommand<TestCommand>()
+        .Build()
+        .Match(
+            Succ: command =>
+            {
+                Assert.IsType(typeReturned, command);
+                command.Run();
+                return Unit.Default;
+            },
+            Fail: error => Unit.Default);
+    }
 }

@@ -5,6 +5,7 @@ using ArgSharpCLI.Interfaces;
 using LanguageExt.Common;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using ICommand = ArgSharpCLI.Interfaces.ICommand;
 
@@ -12,8 +13,16 @@ namespace ArgSharpCLI;
 
 public class CommandBuilder : ICommandBuilder
 {
+    private ICommand? _customGlobalHelpCommand;
+
     private readonly Dictionary<string, Type> _commands = new();
     private readonly Queue<string> _argumentQueue = new();
+
+    public ICommandBuilder AddCustomGlobalHelpCommand(ICommand customGlobalHelpCommand)
+    {
+        _customGlobalHelpCommand = customGlobalHelpCommand;
+        return this;
+    }
 
     public ICommandBuilder AddArguments(string[] args)
     {
@@ -46,7 +55,8 @@ public class CommandBuilder : ICommandBuilder
         {
             if (_argumentQueue.Count == 1)
             {
-                return new Result<ICommand>(GenerateGlobalHelp());
+                var helpCommand = _customGlobalHelpCommand ?? GenerateGlobalHelp();
+                return new Result<ICommand>(helpCommand);
             }
 
             command = GetCommandFromQueue();
@@ -71,14 +81,12 @@ public class CommandBuilder : ICommandBuilder
 
     private ICommand GenerateGlobalHelp()
     {
-        // Generate global help text based on registered commands
         return new GlobalHelpCommand(_commands);
     }
 
     private ICommand GenerateSpecificHelp(ICommand cmd)
     {
-        // Generate help text for a specific command based on its options
-        return cmd; // Or wrap it in a help-command decorator that prints its help info
+        return new HelpCommandDecorator(cmd);
     }
 
     private ICommand GetCommandFromQueue()

@@ -3,7 +3,7 @@ using ICommand = ArgSharpCLI.Interfaces.ICommand;
 
 namespace ArgSharpCLI.Tests;
 
-[Command("test")]
+[Command("test", Description = "Test command.")]
 public class TestCommand : ICommand
 {
     [Option("test-option", "t", "test option")]
@@ -14,9 +14,6 @@ public class TestCommand : ICommand
 
     [Option("test-boolean-option-2", "z", "test boolean option 2")]
     public bool TestBooleanOption2 { get; set; }
-
-    public void Print() =>
-        throw new NotImplementedException();
 
     public void Run() =>
         throw new NotImplementedException();

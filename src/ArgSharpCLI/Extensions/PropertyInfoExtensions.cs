@@ -17,4 +17,10 @@ namespace ArgSharpCLI.Extensions
         public static IEnumerable<PropertyInfo> GetOptionProperties(this PropertyInfo[] propertyInfos) =>
             propertyInfos.Where(property => Attribute.IsDefined(property, typeof(OptionAttribute)));
     }
+
+    public static class TypeExtensions
+    {
+        public static ICommandAttribute GetCommandAttribute(this Type type) =>
+            type.GetCustomAttribute<CommandAttribute>();
+    }
 }
