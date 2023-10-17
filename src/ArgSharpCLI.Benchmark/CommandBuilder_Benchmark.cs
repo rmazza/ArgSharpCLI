@@ -1,15 +1,12 @@
-﻿using ArgSharpCLI.Interfaces;
-using ArgSharpCLI.Tests;
+﻿using ArgSharpCLI.Tests;
 using BenchmarkDotNet.Attributes;
 
 namespace ArgSharpCLI.Benchmark;
 
 [MemoryDiagnoser]
-[InProcessAttribute]
-public class CommandBuilderBenchmark
+[InProcess]
+public class CommandBuilder_Benchmark
 {
-    private ICommandBuilder? _commandToRun;
-
     [ParamsSource(nameof(Args))]
     public string[]? _arguments;
 
@@ -21,17 +18,12 @@ public class CommandBuilderBenchmark
         new string[] { "test", "-xyz", "-t", "hello", "-u", "hello", "-v", "hello"}
     };
 
-    [GlobalSetup]
-    public void GlobalSetup()
-    {
-        _commandToRun = new CommandBuilder()
-            .AddArguments(_arguments)
-            .AddCommand<TestBenchmarkCommand>();
-    }
-
     [Benchmark]
-    public void BenchmarkBuild()
+    public void Build()
     {
-        _commandToRun.Build();
+        new CommandBuilder()
+            .AddArguments(_arguments)
+            .AddCommand<TestBenchmarkCommand>()
+            .Build();
     }
 }
