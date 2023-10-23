@@ -8,9 +8,34 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Windows.Input;
 using ICommand = ArgSharpCLI.Interfaces.ICommand;
 
 namespace ArgSharpCLI;
+
+public interface ICommandConfig<T>
+{
+    Dictionary<string, Type> SubCommands { get; }
+    ICommandConfig<T> AddSubCommand<T2>();
+}
+
+internal class CommandConfig<T> : ICommandConfig<T>
+{
+    public Dictionary<string, Type> SubCommands { get; } = new();
+
+    public ICommandConfig<T> AddSubCommand<T2>()
+    {
+        if (typeof(T2)
+            .GetCustomAttributes(false)
+            .SingleOrDefault(attr => attr is CommandAttribute) is not CommandAttribute attribute)
+            throw new InvalidOperationException($"The type {typeof(T2).Name} must have a {nameof(CommandAttribute)}.");
+
+        SubCommands.Add(attribute.Name, typeof(T2));
+
+        return this;
+
+    }
+}
 
 public class CommandBuilder : ICommandBuilder
 {
@@ -48,28 +73,17 @@ public class CommandBuilder : ICommandBuilder
         return this;
     }
 
-    public ICommandBuilder AddCommand<T>(Action<IList<Type>> addSubCommands)
+    public ICommandBuilder AddCommand<T>(Action<ICommandConfig<T>> addSubCommands)
         where T : ICommand
     {
         var attribute = GetCommandAttribute<T>();
 
         _commands.Add(attribute.Name, typeof(T));
-        _subCommands.Add(typeof(T), new Dictionary<string, Type>());
 
-        var subComms = new List<Type>();
+        ICommandConfig<T> commandConfig = new CommandConfig<T>();
+        addSubCommands(commandConfig);
 
-        addSubCommands(subComms);
-
-        if (subComms.Any())
-        {
-            var hash = _subCommands[typeof(T)];
-            
-            foreach(var cmd in subComms)
-            {
-                var attr = GetCommandAttribute(cmd);
-                hash.Add(attr.Name, cmd);
-            }
-        }
+        _subCommands.Add(typeof(T), commandConfig.SubCommands);
 
         return this;
     }

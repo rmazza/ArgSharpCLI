@@ -205,8 +205,8 @@ public class CommandRunnerBuilderTests
     {
         var commandToRun = new CommandBuilder()
         .AddArguments(args)
-        .AddCommand<TestCommand>(subCommands => 
-            subCommands.Add(typeof(SubTestCommand)))
+        .AddCommand<TestCommand>(subCommandConfig => 
+            subCommandConfig.AddSubCommand<SubTestCommand>())
         .Build()
         .Match(
             Succ: command =>
