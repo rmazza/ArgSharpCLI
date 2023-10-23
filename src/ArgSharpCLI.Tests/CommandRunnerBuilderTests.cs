@@ -1,9 +1,7 @@
 using ArgSharpCLI.Commands;
 using ArgSharpCLI.ExceptionHandling;
-using ArgSharpCLI.Interfaces;
 using LanguageExt;
-using LanguageExt.Pipes;
-using System.Runtime.CompilerServices;
+using ArgSharpCLI.Extensions;
 
 namespace ArgSharpCLI.Tests;
 
@@ -43,8 +41,8 @@ public class CommandRunnerBuilderTests
 
         commandToRun.Match(
             Succ: command =>
-            {         
-                Assert.Throws<NotImplementedException>(() => command.Run());         
+            {
+                Assert.Throws<NotImplementedException>(() => command.Run());
                 return Unit.Default;
             },
             Fail: ex =>
@@ -72,7 +70,7 @@ public class CommandRunnerBuilderTests
                 Assert.IsType<TestCommand>(command);
                 if (command is TestCommand testCommand)
                 {
-                Assert.Equal(expectedOptionValue, testCommand.TestOption);
+                    Assert.Equal(expectedOptionValue, testCommand.TestOption);
                 }
                 return Unit.Default;
             },
@@ -196,6 +194,24 @@ public class CommandRunnerBuilderTests
             {
                 Assert.IsType(typeReturned, command);
                 command.Run();
+                return Unit.Default;
+            },
+            Fail: error => Unit.Default);
+    }
+
+    [Theory]
+    [InlineData(new[] { "test", "-b", "subcommand" }, typeof(SubTestCommand))]
+    public void Build_WithTestArgument_ReturnsSubCommand(string[] args, Type typeReturned)
+    {
+        var commandToRun = new CommandBuilder()
+        .AddArguments(args)
+        .AddCommand<TestCommand>(subCommands => 
+            subCommands.Add(typeof(SubTestCommand)))
+        .Build()
+        .Match(
+            Succ: command =>
+            {
+                Assert.IsType(typeReturned, command);
                 return Unit.Default;
             },
             Fail: error => Unit.Default);

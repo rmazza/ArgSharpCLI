@@ -1,8 +1,10 @@
 ﻿using ArgSharpCLI.ExceptionHandling;
 using ArgSharpCLI.Extensions;
 using ArgSharpCLI.Interfaces;
+using LanguageExt.Common;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Reflection;
 using System.Text;
 
@@ -14,26 +16,47 @@ internal class OptionParser
 
     private ICommand? _cmd;
     private IDictionary<string, PropertyInfo>? _optionDictionary;
+    private IDictionary<string, Type>? _subCommands;
 
     public OptionParser(Queue<string> arguments) => _arguments = arguments;
 
-    public void BuildOptions()
+    public ICommand BuildOptions()
     {
         Ensure.IsNotNull(_cmd, "Command cannot be null");
-        
+
         while (_arguments.Count > 0)
         {
-            var argument = _arguments.Dequeue();
+            //string argument = _arguments.Dequeue();
+            _arguments.TryPeek(out string argument);
 
             if (IsLongOption(argument))
             {
+                _arguments.Dequeue();
                 HandleLongOption(argument, _arguments);
             }
             else if (IsShortOption(argument))
             {
+                _arguments.Dequeue();
                 HandleShortOption(argument, _arguments);
             }
+            else
+            {
+                return _cmd;
+                //var subCommand = HandleSubCommand(_cmd, _subCommands, argument, _arguments);
+            }
+            //_arguments.Dequeue();
         }
+
+        return _cmd;
+    }
+
+    private ICommand HandleSubCommand(ICommand cmd, IDictionary<string, Type>? subCommands, string argument, Queue<string> arguments)
+    {
+        if (!subCommands.TryGetValue(argument, out Type subCommandType))
+            throw new CommandNotFoundException($"Sub command {argument} not found");
+
+        var subCommand = Activator.CreateInstance(subCommandType) as ICommand;
+        return subCommand;
     }
 
     public bool IsHelpRequested()
@@ -104,6 +127,7 @@ internal class OptionParser
         }
         else
         {
+            
             if (!args.TryPeek(out string result))
                 throw new Exception("No value provided for argument");
 
@@ -143,6 +167,12 @@ internal class OptionParser
     {
         _cmd = cmd;
         _optionDictionary = GetOptionAttributesFromCommandProperties(cmd);
+        return this;
+    }
+
+    internal OptionParser AddSubCommand(Dictionary<string, Type> subCommands)
+    {
+        _subCommands = subCommands;
         return this;
     }
 }

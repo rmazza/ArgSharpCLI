@@ -15,8 +15,17 @@ public class TestCommand : ICommand
     [Option("test-boolean-option-2", "z", "test boolean option 2")]
     public bool TestBooleanOption2 { get; set; }
 
+    public Dictionary<string, ICommand> SubCommands { get; }
+
+    public TestCommand()
+    {
+       
+    }
+
     public void Run() =>
         throw new NotImplementedException();
+
+    
 }
 
 

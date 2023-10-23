@@ -2,6 +2,7 @@
 using ArgSharpCLI.Commands;
 using ArgSharpCLI.ExceptionHandling;
 using ArgSharpCLI.Interfaces;
+using LanguageExt;
 using LanguageExt.Common;
 using System;
 using System.Collections.Generic;
@@ -17,6 +18,7 @@ public class CommandBuilder : ICommandBuilder
 
     private readonly Dictionary<string, Type> _commands = new();
     private readonly Queue<string> _argumentQueue = new();
+    private readonly Dictionary<Type, Dictionary<string, Type>> _subCommands = new();
 
     public ICommandBuilder AddCustomGlobalHelpCommand(ICommand customGlobalHelpCommand)
     {
@@ -42,6 +44,33 @@ public class CommandBuilder : ICommandBuilder
             throw new InvalidOperationException($"The type {typeof(T).Name} must have a {nameof(CommandAttribute)}.");
 
         _commands.Add(attribute.Name, typeof(T));
+
+        return this;
+    }
+
+    public ICommandBuilder AddCommand<T>(Action<IList<Type>> addSubCommands)
+        where T : ICommand
+    {
+        var attribute = GetCommandAttribute<T>();
+
+        _commands.Add(attribute.Name, typeof(T));
+        _subCommands.Add(typeof(T), new Dictionary<string, Type>());
+
+        var subComms = new List<Type>();
+
+        addSubCommands(subComms);
+
+        if (subComms.Any())
+        {
+            var hash = _subCommands[typeof(T)];
+            
+            foreach(var cmd in subComms)
+            {
+                var attr = GetCommandAttribute(cmd);
+                hash.Add(attr.Name, cmd);
+            }
+        }
+
         return this;
     }
 
@@ -49,8 +78,7 @@ public class CommandBuilder : ICommandBuilder
     {
         var optionParser = new OptionParser(_argumentQueue);
 
-        ICommand? command = null;
-
+        ICommand? command;
         if (optionParser.IsHelpRequested())
         {
             if (_argumentQueue.Count == 1)
@@ -59,7 +87,7 @@ public class CommandBuilder : ICommandBuilder
                 return new Result<ICommand>(helpCommand);
             }
 
-            command = GetCommandFromQueue();
+            command = GetCommandFromQueue(_argumentQueue, _commands);
             if (command != null)
             {
                 return new Result<ICommand>(GenerateSpecificHelp(command));
@@ -67,7 +95,8 @@ public class CommandBuilder : ICommandBuilder
 
         }
 
-        command = GetCommandFromQueue();
+        command = GetCommandFromQueue(_argumentQueue, _commands);
+        _ = _argumentQueue.Dequeue();
 
         if (command is null)
             return new Result<ICommand>(new CommandNotFoundException());
@@ -75,6 +104,14 @@ public class CommandBuilder : ICommandBuilder
         optionParser
             .SetCommand(command)
             .BuildOptions();
+
+        // has subcommand
+        if (_argumentQueue.Any())
+        {
+            command = GetCommandFromQueue(_argumentQueue, _subCommands[command.GetType()]);
+            optionParser.SetCommand(command).BuildOptions();
+
+        }
 
         return new Result<ICommand>(command);
     }
@@ -89,17 +126,31 @@ public class CommandBuilder : ICommandBuilder
         return new HelpCommand(cmd);
     }
 
-    private ICommand GetCommandFromQueue()
+    private static ICommand GetCommandFromQueue(Queue<string> argumentQueue, Dictionary<string, Type> commands)
     {
-        if (!_argumentQueue.TryPeek(out string argument))
-            return null;
+        if (!argumentQueue.TryPeek(out string argument))
+            return new EmptyCommand();
 
-        if (_commands.TryGetValue(argument, out Type commandType) && Activator.CreateInstance(commandType) is ICommand cmd)
+        if (commands.TryGetValue(argument, out Type commandType) && Activator.CreateInstance(commandType) is ICommand cmd)
         {
             return cmd;
         }
 
-        return null;
+        return new EmptyCommand();
+    }
+
+    private static ICommandAttribute GetCommandAttribute<T>() where T : ICommand
+    {
+        return GetCommandAttribute(typeof(T));
+    }
+
+    private static ICommandAttribute GetCommandAttribute(Type t)
+    {
+        if (t
+            .GetCustomAttributes(false)
+            .SingleOrDefault(attr => attr is CommandAttribute) is not CommandAttribute attribute)
+            throw new InvalidOperationException($"The type {t.Name} must have a {nameof(CommandAttribute)}.");
+        return attribute;
     }
 
 }

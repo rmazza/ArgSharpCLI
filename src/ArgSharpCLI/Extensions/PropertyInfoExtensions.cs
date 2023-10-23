@@ -1,7 +1,9 @@
 ﻿using ArgSharpCLI.Attributes;
 using ArgSharpCLI.Interfaces;
+using LanguageExt.Common;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -23,4 +25,14 @@ namespace ArgSharpCLI.Extensions
         public static ICommandAttribute GetCommandAttribute(this Type type) =>
             type.GetCustomAttribute<CommandAttribute>();
     }
+
+    //public static class ResultExtensions
+    //{
+    //    public static TResult MapCommand<Tin, TResult>(this Result<Tin> result, Func<Tin, TResult> success, Func<Exception, TResult> fail) where Tin : ICommand
+    //    {
+    //        return result.Match(
+    //            Succ: command => success(command),
+    //            Fail: ex => fail(ex));
+    //    }
+    //}
 }
