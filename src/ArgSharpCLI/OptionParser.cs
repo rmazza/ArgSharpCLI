@@ -1,12 +1,10 @@
 ﻿using ArgSharpCLI.ExceptionHandling;
 using ArgSharpCLI.Extensions;
 using ArgSharpCLI.Interfaces;
-using LanguageExt.Common;
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Reflection;
-using System.Text;
+using System.Security.Cryptography;
 
 namespace ArgSharpCLI;
 
@@ -20,21 +18,24 @@ internal class OptionParser
 
     public OptionParser(Queue<string> arguments) => _arguments = arguments;
 
-    public ICommand BuildOptions()
+    public ICommand BuildOptions(Func<ICommand, ICommand> helpFunction)
     {
         Ensure.IsNotNull(_cmd, "Command cannot be null");
 
         while (_arguments.Count > 0)
         {
-            //string argument = _arguments.Dequeue();
             _arguments.TryPeek(out string argument);
 
-            if (IsLongOption(argument))
+            if (argument.IsHelpOption())
+            {
+                return helpFunction(_cmd);
+            }
+            else if (argument.IsLongOption())
             {
                 _arguments.Dequeue();
                 HandleLongOption(argument, _arguments);
             }
-            else if (IsShortOption(argument))
+            else if (argument.IsShortOption())
             {
                 _arguments.Dequeue();
                 HandleShortOption(argument, _arguments);
@@ -42,31 +43,16 @@ internal class OptionParser
             else
             {
                 return _cmd;
-                //var subCommand = HandleSubCommand(_cmd, _subCommands, argument, _arguments);
             }
-            //_arguments.Dequeue();
         }
 
         return _cmd;
-    }
-
-    private ICommand HandleSubCommand(ICommand cmd, IDictionary<string, Type>? subCommands, string argument, Queue<string> arguments)
-    {
-        if (!subCommands.TryGetValue(argument, out Type subCommandType))
-            throw new CommandNotFoundException($"Sub command {argument} not found");
-
-        var subCommand = Activator.CreateInstance(subCommandType) as ICommand;
-        return subCommand;
     }
 
     public bool IsHelpRequested()
     {
         return _arguments.Contains("-h") || _arguments.Contains("--help");
     }
-
-    private bool IsLongOption(string arg) => arg.StartsWith("--");
-
-    private bool IsShortOption(string arg) => arg.StartsWith("-");
 
     private void HandleLongOption(string argument, Queue<string> args)
     {
@@ -167,12 +153,6 @@ internal class OptionParser
     {
         _cmd = cmd;
         _optionDictionary = GetOptionAttributesFromCommandProperties(cmd);
-        return this;
-    }
-
-    internal OptionParser AddSubCommand(Dictionary<string, Type> subCommands)
-    {
-        _subCommands = subCommands;
         return this;
     }
 }

@@ -1,5 +1,4 @@
-﻿using ArgSharpCLI.Interfaces;
-using System;
+﻿using System;
 using System.Linq;
 
 namespace ArgSharpCLI.ExceptionHandling;

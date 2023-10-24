@@ -1,7 +1,6 @@
 using ArgSharpCLI.Commands;
 using ArgSharpCLI.ExceptionHandling;
 using LanguageExt;
-using ArgSharpCLI.Extensions;
 
 namespace ArgSharpCLI.Tests;
 

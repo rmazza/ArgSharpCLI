@@ -6,9 +6,7 @@ using LanguageExt;
 using LanguageExt.Common;
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
-using System.Windows.Input;
 using ICommand = ArgSharpCLI.Interfaces.ICommand;
 
 namespace ArgSharpCLI;
@@ -91,33 +89,30 @@ public class CommandBuilder : ICommandBuilder
     public Result<ICommand> Build()
     {
         var optionParser = new OptionParser(_argumentQueue);
+        bool isHelpRequested = optionParser.IsHelpRequested();
 
-        ICommand? command;
-        if (optionParser.IsHelpRequested())
-        {
-            if (_argumentQueue.Count == 1)
-            {
-                var helpCommand = _customGlobalHelpCommand ?? GenerateGlobalHelp();
-                return new Result<ICommand>(helpCommand);
-            }
+        //if (optionParser.IsHelpRequested())
+        //{
+        //    if (_argumentQueue.Count == 1)
+        //    {
+        //        var helpCommand = _customGlobalHelpCommand ?? GenerateGlobalHelp();
+        //        return new Result<ICommand>(helpCommand);
+        //    }
 
-            command = GetCommandFromQueue(_argumentQueue, _commands);
-            if (command != null)
-            {
-                return new Result<ICommand>(GenerateSpecificHelp(command));
-            }
+        //    command = GetCommandFromQueue(_argumentQueue, _commands);
+        //    if (command != null)
+        //    {
+        //        return new Result<ICommand>(GenerateSpecificHelp(command));
+        //    }
 
-        }
+        //}
 
-        command = GetCommandFromQueue(_argumentQueue, _commands);
+        ICommand command = GetCommandFromQueue(_argumentQueue, _commands);
         _ = _argumentQueue.Dequeue();
-
-        if (command is null)
-            return new Result<ICommand>(new CommandNotFoundException());
 
         optionParser
             .SetCommand(command)
-            .BuildOptions();
+            .BuildOptions(MapHelpCommand());
 
         // has subcommand
         if (_argumentQueue.Any())
@@ -125,11 +120,26 @@ public class CommandBuilder : ICommandBuilder
             command = GetCommandFromQueue(_argumentQueue, _subCommands[command.GetType()]);
             optionParser
                 .SetCommand(command)
-                .BuildOptions();
+                .BuildOptions(MapHelpCommand());
+        }
+
+        if (isHelpRequested)
+        {
+
         }
 
         return new Result<ICommand>(command);
     }
+
+    private Func<ICommand, ICommand> MapHelpCommand() =>
+            cmd =>
+                cmd switch
+                {
+                    EmptyCommand => new GlobalHelpCommand(_commands),
+                    ICommand => GenerateSpecificHelp(cmd),
+                    _ => throw new Exception("Test")
+                };
+
 
     private ICommand GenerateGlobalHelp()
     {
@@ -146,7 +156,8 @@ public class CommandBuilder : ICommandBuilder
         if (!argumentQueue.TryPeek(out string argument))
             return new EmptyCommand();
 
-        if (commands.TryGetValue(argument, out Type commandType) && Activator.CreateInstance(commandType) is ICommand cmd)
+        if (commands.TryGetValue(argument, out Type commandType)
+            && Activator.CreateInstance(commandType) is ICommand cmd)
         {
             return cmd;
         }

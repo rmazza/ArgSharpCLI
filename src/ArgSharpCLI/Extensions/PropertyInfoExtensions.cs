@@ -1,12 +1,9 @@
 ﻿using ArgSharpCLI.Attributes;
 using ArgSharpCLI.Interfaces;
-using LanguageExt.Common;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 
 namespace ArgSharpCLI.Extensions
 {

@@ -1,6 +1,5 @@
 ﻿using LanguageExt.Common;
 using System;
-using System.Collections.Generic;
 
 namespace ArgSharpCLI.Interfaces
 {
