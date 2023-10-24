@@ -14,7 +14,6 @@ internal class OptionParser
 
     private ICommand? _cmd;
     private IDictionary<string, PropertyInfo>? _optionDictionary;
-    private IDictionary<string, Type>? _subCommands;
 
     public OptionParser(Queue<string> arguments) => _arguments = arguments;
 
@@ -28,6 +27,7 @@ internal class OptionParser
 
             if (argument.IsHelpOption())
             {
+                _arguments.Dequeue();
                 return helpFunction(_cmd);
             }
             else if (argument.IsLongOption())
@@ -47,11 +47,6 @@ internal class OptionParser
         }
 
         return _cmd;
-    }
-
-    public bool IsHelpRequested()
-    {
-        return _arguments.Contains("-h") || _arguments.Contains("--help");
     }
 
     private void HandleLongOption(string argument, Queue<string> args)

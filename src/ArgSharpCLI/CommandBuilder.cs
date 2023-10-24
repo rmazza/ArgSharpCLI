@@ -89,28 +89,13 @@ public class CommandBuilder : ICommandBuilder
     public Result<ICommand> Build()
     {
         var optionParser = new OptionParser(_argumentQueue);
-        bool isHelpRequested = optionParser.IsHelpRequested();
-
-        //if (optionParser.IsHelpRequested())
-        //{
-        //    if (_argumentQueue.Count == 1)
-        //    {
-        //        var helpCommand = _customGlobalHelpCommand ?? GenerateGlobalHelp();
-        //        return new Result<ICommand>(helpCommand);
-        //    }
-
-        //    command = GetCommandFromQueue(_argumentQueue, _commands);
-        //    if (command != null)
-        //    {
-        //        return new Result<ICommand>(GenerateSpecificHelp(command));
-        //    }
-
-        //}
 
         ICommand command = GetCommandFromQueue(_argumentQueue, _commands);
-        _ = _argumentQueue.Dequeue();
 
-        optionParser
+        if (command is not EmptyCommand)
+            _ = _argumentQueue.Dequeue();
+
+        command = optionParser
             .SetCommand(command)
             .BuildOptions(MapHelpCommand());
 
@@ -118,14 +103,10 @@ public class CommandBuilder : ICommandBuilder
         if (_argumentQueue.Any())
         {
             command = GetCommandFromQueue(_argumentQueue, _subCommands[command.GetType()]);
-            optionParser
+            _ = _argumentQueue.Dequeue();
+            command = optionParser
                 .SetCommand(command)
                 .BuildOptions(MapHelpCommand());
-        }
-
-        if (isHelpRequested)
-        {
-
         }
 
         return new Result<ICommand>(command);
