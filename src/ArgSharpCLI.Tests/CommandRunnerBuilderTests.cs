@@ -201,6 +201,7 @@ public class CommandRunnerBuilderTests
 
     [Theory]
     [InlineData(new[] { "test", "-b", "subcommand" }, typeof(SubTestCommand))]
+    [InlineData(new[] { "test", "subcommand" }, typeof(SubTestCommand))]
     public void Build_WithTestArgument_ReturnsSubCommand(string[] args, Type typeReturned)
     {
         var commandToRun = new CommandBuilder()

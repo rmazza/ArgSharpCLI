@@ -123,8 +123,9 @@ public class CommandBuilder : ICommandBuilder
         if (_argumentQueue.Any())
         {
             command = GetCommandFromQueue(_argumentQueue, _subCommands[command.GetType()]);
-            optionParser.SetCommand(command).BuildOptions();
-
+            optionParser
+                .SetCommand(command)
+                .BuildOptions();
         }
 
         return new Result<ICommand>(command);
