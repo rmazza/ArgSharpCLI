@@ -1,5 +1,7 @@
 # ArgSharpCLI
 
+[![main](https://github.com/rmazza/ArgSharpCLI/actions/workflows/dotnet.yml/badge.svg?branch=main)](https://github.com/rmazza/ArgSharpCLI/actions/workflows/dotnet.yml)
+
 ## Description
 
 `ArgSharpCLI` is a lightweight and extensible command-line argument parser for C# applications. It makes building robust CLI apps easy and maintainable by embracing SOLID principles.
