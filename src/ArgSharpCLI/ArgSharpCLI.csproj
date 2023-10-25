@@ -9,6 +9,7 @@
 		<Nullable>enable</Nullable>
 		<Title>ArgSharpCLI</Title>
 		<Authors>rmazza</Authors>
+		<PackageProjectUrl>https://github.com/rmazza/ArgSharpCLI/tree/main</PackageProjectUrl>
 		<WarningsAsErrors>true</WarningsAsErrors>
 		<Description>ArgSharpCLI is a lightweight and extensible command-line argument parser for C# applications. It makes building robust CLI apps easy and maintainable by embracing SOLID principles.</Description>
 	</PropertyGroup>
