@@ -7,7 +7,7 @@ namespace ArgSharpCLI.Interfaces
     {
         ICommandBuilder AddArguments(string[] args);
         ICommandBuilder AddCommand<T>() where T : ICommand;
-        ICommandBuilder AddCommand<T>(Action<ICommandConfig<T>> addSubCommands) where T : ICommand;
+        ICommandBuilder AddCommand<T>(Action<ICommandConfig> addSubCommands) where T : ICommand;
         Result<ICommand> Build();
     }
 }

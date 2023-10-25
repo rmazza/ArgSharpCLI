@@ -11,28 +11,29 @@ using ICommand = ArgSharpCLI.Interfaces.ICommand;
 
 namespace ArgSharpCLI;
 
-public interface ICommandConfig<T>
+public interface ICommandConfig
 {
-    Dictionary<string, Type> SubCommands { get; }
-    ICommandConfig<T> AddSubCommand<T2>();
+    ICommandConfig AddSubCommand<T2>();
+    Dictionary<string, Type> GetSubCommands();
 }
 
-internal class CommandConfig<T> : ICommandConfig<T>
+internal class CommandConfig : ICommandConfig
 {
-    public Dictionary<string, Type> SubCommands { get; } = new();
+    private readonly Dictionary<string, Type> _subCommands = new();
 
-    public ICommandConfig<T> AddSubCommand<T2>()
+    public ICommandConfig AddSubCommand<T2>()
     {
         if (typeof(T2)
             .GetCustomAttributes(false)
             .SingleOrDefault(attr => attr is CommandAttribute) is not CommandAttribute attribute)
             throw new InvalidOperationException($"The type {typeof(T2).Name} must have a {nameof(CommandAttribute)}.");
 
-        SubCommands.Add(attribute.Name, typeof(T2));
+        _subCommands.Add(attribute.Name, typeof(T2));
 
         return this;
-
     }
+
+    public Dictionary<string, Type> GetSubCommands() => _subCommands;
 }
 
 public class CommandBuilder : ICommandBuilder
@@ -71,17 +72,17 @@ public class CommandBuilder : ICommandBuilder
         return this;
     }
 
-    public ICommandBuilder AddCommand<T>(Action<ICommandConfig<T>> addSubCommands)
+    public ICommandBuilder AddCommand<T>(Action<ICommandConfig> addSubCommands)
         where T : ICommand
     {
         var attribute = GetCommandAttribute<T>();
 
         _commands.Add(attribute.Name, typeof(T));
 
-        ICommandConfig<T> commandConfig = new CommandConfig<T>();
+        ICommandConfig commandConfig = new CommandConfig();
         addSubCommands(commandConfig);
 
-        _subCommands.Add(typeof(T), commandConfig.SubCommands);
+        _subCommands.Add(typeof(T), commandConfig.GetSubCommands());
 
         return this;
     }
@@ -116,18 +117,15 @@ public class CommandBuilder : ICommandBuilder
             cmd =>
                 cmd switch
                 {
-                    EmptyCommand => new GlobalHelpCommand(_commands),
+                    EmptyCommand => GenerateGlobalHelp(_commands),
                     ICommand => GenerateSpecificHelp(cmd),
                     _ => throw new Exception("Test")
                 };
 
-
-    private ICommand GenerateGlobalHelp()
-    {
-        return new GlobalHelpCommand(_commands);
-    }
-
-    private ICommand GenerateSpecificHelp(ICommand cmd)
+    private static ICommand GenerateGlobalHelp(Dictionary<string, Type> commands) => 
+        new GlobalHelpCommand(commands);
+    
+    private static ICommand GenerateSpecificHelp(ICommand cmd)
     {
         return new HelpCommand(cmd);
     }

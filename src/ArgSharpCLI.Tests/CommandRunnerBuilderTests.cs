@@ -199,6 +199,27 @@ public class CommandRunnerBuilderTests
     }
 
     [Theory]
+    [InlineData(new[] { "test", "-bz", "subcommand", "--help" }, typeof(HelpCommand))]
+    [InlineData(new[] { "test", "subcommand", "--help" }, typeof(HelpCommand))]
+    [InlineData(new[] { "test", "subcommand", "-h" }, typeof(HelpCommand))]
+    public void Build_WithTestArgument_ReturnsSubHelpCommand(string[] args, Type typeReturned)
+    {
+        var commandToRun = new CommandBuilder()
+        .AddArguments(args)
+        .AddCommand<TestCommand>(config => 
+            config.AddSubCommand<SubTestCommand>())
+        .Build()
+        .Match(
+            Succ: command =>
+            {
+                Assert.IsType(typeReturned, command);
+                command.Run();
+                return Unit.Default;
+            },
+            Fail: error => Unit.Default);
+    }
+
+    [Theory]
     [InlineData(new[] { "test", "-b", "subcommand" }, typeof(SubTestCommand))]
     [InlineData(new[] { "test", "subcommand" }, typeof(SubTestCommand))]
     public void Build_WithTestArgument_ReturnsSubCommand(string[] args, Type typeReturned)

@@ -11,7 +11,7 @@ public class CommandBuilder_BuildBenchmark
     private ICommandBuilder? _commandToRun;
 
     [ParamsSource(nameof(Args))]
-    public string[]? _arguments;
+    public required string[] _arguments;
 
     public List<string[]>? Args { get; } =
     new()
