@@ -62,13 +62,19 @@ public class CommandBuilder : ICommandBuilder
 
     public ICommandBuilder AddCommand<T>() where T : ICommand
     {
-        if (typeof(T)
-            .GetCustomAttributes(false)
-            .SingleOrDefault(attr => attr is CommandAttribute) is not CommandAttribute attribute)
-            throw new InvalidOperationException($"The type {typeof(T).Name} must have a {nameof(CommandAttribute)}.");
+        AddTypeToCommandDictionary(new[] { typeof(T) });
+        return this;
+    }
 
-        _commands.Add(attribute.Name, typeof(T));
+    public ICommandBuilder AddCommand<T1, T2>()
+    {
+        AddTypeToCommandDictionary(new[] { typeof(T1), typeof(T2) });
+        return this;
+    }
 
+    public ICommandBuilder AddCommand<T1, T2, T3>()
+    {
+        AddTypeToCommandDictionary(new[] { typeof(T1), typeof(T2), typeof(T3) });
         return this;
     }
 
@@ -94,19 +100,24 @@ public class CommandBuilder : ICommandBuilder
         if (command is not EmptyCommand)
             _ = _argumentQueue.Dequeue();
 
-        command = new OptionParser(command, _argumentQueue)
-            .BuildOptions(MapHelpCommand());
+        command = BuildOptions(command);
 
         // has subcommand
-        if (_argumentQueue.Any())
+        while (_argumentQueue.Any())
         {
             command = GetCommandFromQueue(_argumentQueue, _subCommands[command.GetType()]);
             _ = _argumentQueue.Dequeue();
-            command = new OptionParser(command, _argumentQueue)
-                .BuildOptions(MapHelpCommand());
+            command = BuildOptions(command);
         }
 
         return new Result<ICommand>(command);
+    }
+
+    private ICommand BuildOptions(ICommand command)
+    {
+        command = new OptionParser(command, _argumentQueue)
+            .BuildOptions(MapHelpCommand());
+        return command;
     }
 
     private Func<ICommand, ICommand> MapHelpCommand() =>
@@ -117,6 +128,18 @@ public class CommandBuilder : ICommandBuilder
                     ICommand => GenerateSpecificHelp(cmd),
                     _ => throw new Exception("Test")
                 };
+
+    private void AddTypeToCommandDictionary(Type[] commandTypes)
+    {
+        foreach (var t in commandTypes)
+        {
+            if (t
+               .GetCustomAttributes(false)
+               .SingleOrDefault(attr => attr is CommandAttribute) is not CommandAttribute attribute)
+                throw new InvalidOperationException($"The type {t.Name} must have a {nameof(CommandAttribute)}.");
+            _commands.Add(attribute.Name, t);
+        }
+    }
 
     private static ICommand GenerateGlobalHelp(Dictionary<string, Type> commands) => 
         new GlobalHelpCommand(commands);

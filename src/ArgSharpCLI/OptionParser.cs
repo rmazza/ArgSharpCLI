@@ -31,9 +31,9 @@ internal class OptionParser
 
             if (!argument.IsOption())
             {
-                return _cmd;
+                break;
             }
-
+          
             _arguments.Dequeue();
 
             if (argument.IsHelpOption())
