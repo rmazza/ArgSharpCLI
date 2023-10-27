@@ -1,6 +1,8 @@
 ﻿namespace ArgSharpCLI.Extensions;
 public static class StringExtensions
 {
+    public static bool IsOption(this string option) =>
+        IsHelpOption(option) || IsLongOption(option) || IsShortOption(option);
     public static bool IsHelpOption(this string str) =>
         string.Equals(str, "-h", System.StringComparison.InvariantCultureIgnoreCase) ||
         string.Equals(str, "--help", System.StringComparison.InvariantCultureIgnoreCase) ||

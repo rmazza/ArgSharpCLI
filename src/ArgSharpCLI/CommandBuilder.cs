@@ -89,15 +89,12 @@ public class CommandBuilder : ICommandBuilder
 
     public Result<ICommand> Build()
     {
-        var optionParser = new OptionParser(_argumentQueue);
-
         ICommand command = GetCommandFromQueue(_argumentQueue, _commands);
 
         if (command is not EmptyCommand)
             _ = _argumentQueue.Dequeue();
 
-        command = optionParser
-            .SetCommand(command)
+        command = new OptionParser(command, _argumentQueue)
             .BuildOptions(MapHelpCommand());
 
         // has subcommand
@@ -105,8 +102,7 @@ public class CommandBuilder : ICommandBuilder
         {
             command = GetCommandFromQueue(_argumentQueue, _subCommands[command.GetType()]);
             _ = _argumentQueue.Dequeue();
-            command = optionParser
-                .SetCommand(command)
+            command = new OptionParser(command, _argumentQueue)
                 .BuildOptions(MapHelpCommand());
         }
 
