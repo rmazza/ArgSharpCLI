@@ -67,14 +67,29 @@ public class CommandBuilder : ICommandBuilder
     }
 
     public ICommandBuilder AddCommand<T1, T2>()
+            where T1 : ICommand
+            where T2 : ICommand
     {
         AddTypeToCommandDictionary(new[] { typeof(T1), typeof(T2) });
         return this;
     }
 
     public ICommandBuilder AddCommand<T1, T2, T3>()
+            where T1 : ICommand
+            where T2 : ICommand
+            where T3 : ICommand
     {
         AddTypeToCommandDictionary(new[] { typeof(T1), typeof(T2), typeof(T3) });
+        return this;
+    }
+
+    public ICommandBuilder AddCommand<T1, T2, T3, T4>()
+            where T1 : ICommand
+            where T2 : ICommand
+            where T3 : ICommand
+            where T4 : ICommand
+    {
+        AddTypeToCommandDictionary(new[] { typeof(T1), typeof(T2), typeof(T3), typeof(T4) });
         return this;
     }
 
@@ -141,9 +156,9 @@ public class CommandBuilder : ICommandBuilder
         }
     }
 
-    private static ICommand GenerateGlobalHelp(Dictionary<string, Type> commands) => 
+    private static ICommand GenerateGlobalHelp(Dictionary<string, Type> commands) =>
         new GlobalHelpCommand(commands);
-    
+
     private static ICommand GenerateSpecificHelp(ICommand cmd)
     {
         return new HelpCommand(cmd);

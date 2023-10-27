@@ -1,5 +1,6 @@
 using ArgSharpCLI.Commands;
 using ArgSharpCLI.ExceptionHandling;
+using ArgSharpCLI.Tests.Commands;
 using LanguageExt;
 
 namespace ArgSharpCLI.Tests;
@@ -8,18 +9,20 @@ public class CommandRunnerBuilderTests
 {
     private readonly string[] _args = { "test" };
 
-    [Fact]
-    public void Build_WithTestArgument_ReturnsTestCommandInstance()
+    [Theory]
+    [InlineData(new[] { "test" }, typeof(TestCommand))]
+    [InlineData(new[] { "second" }, typeof(SecondCommand))]
+    public void Build_WithTestArgument_ReturnsTestCommandInstance(string[] args, Type t)
     {
         var commandToRun = new CommandBuilder()
-                .AddArguments(_args)
-                .AddCommand<TestCommand>()
+                .AddArguments(args)
+                .AddCommand<TestCommand, SecondCommand>()
                 .Build();
 
         commandToRun.Match(
                 Succ: command =>
                 {
-                    Assert.IsType<TestCommand>(command);
+                    Assert.IsType(t, command);
                     return Unit.Default;
                 },
                 Fail: ex =>
