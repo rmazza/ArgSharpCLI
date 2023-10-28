@@ -3,19 +3,23 @@ using ArgSharpCLI.Extensions;
 using ArgSharpCLI.Interfaces;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using System.Security.Cryptography;
 
 namespace ArgSharpCLI;
 
 internal class OptionParser
 {
     private readonly Queue<string> _arguments;
+    private readonly ICommand _cmd;
+    private readonly IDictionary<string, PropertyInfo> _optionDictionary;
 
-    private ICommand? _cmd;
-    private IDictionary<string, PropertyInfo>? _optionDictionary;
-
-    public OptionParser(Queue<string> arguments) => _arguments = arguments;
+    public OptionParser(ICommand command, Queue<string> arguments)
+    {
+        _cmd = command;
+        _arguments = arguments;
+        _optionDictionary = GetOptionAttributesFromCommandProperties(command);
+    }
 
     public ICommand BuildOptions(Func<ICommand, ICommand> helpFunction)
     {
@@ -25,24 +29,25 @@ internal class OptionParser
         {
             _arguments.TryPeek(out string argument);
 
+            if (!argument.IsOption())
+            {
+                break;
+            }
+          
+            _arguments.Dequeue();
+
             if (argument.IsHelpOption())
             {
-                _arguments.Dequeue();
                 return helpFunction(_cmd);
             }
-            else if (argument.IsLongOption())
+            
+            if (argument.IsLongOption())
             {
-                _arguments.Dequeue();
                 HandleLongOption(argument, _arguments);
             }
             else if (argument.IsShortOption())
             {
-                _arguments.Dequeue();
                 HandleShortOption(argument, _arguments);
-            }
-            else
-            {
-                return _cmd;
             }
         }
 
@@ -60,44 +65,35 @@ internal class OptionParser
     private void HandleShortOption(string argument, Queue<string> args)
     {
         // for grouped shorthand options
-        if (argument.Length > 2)
-        {
-            foreach (var opt in argument[1..])
-            {
-                HandleGroupedShortOption(opt, args);
-            }
-        }
-        else
+        if (argument.Length <= 2)
         {
             HandleSingleShortOption(argument, args);
+            return;
+        }
+
+        foreach (var opt in argument[1..])
+        {
+            HandleGroupedShortOption(opt);
         }
     }
 
-    private void HandleGroupedShortOption(char opt, Queue<string> args)
+    private void HandleGroupedShortOption(char opt)
     {
-        if (_optionDictionary.TryGetValue(opt.ToString(), out PropertyInfo sp))
-        {
-            if (sp.PropertyType != typeof(bool))
-                throw new InvalidCommandException("Grouping short hand properties must all be boolean types");
-
-            sp.SetValue(_cmd, true);
-        }
-        else
-        {
+        if (!_optionDictionary.TryGetValue(opt.ToString(), out PropertyInfo sp))
             throw new CommandNotFoundException($"{opt} not found");
-        }
+
+        if (sp.PropertyType != typeof(bool))
+            throw new InvalidCommandException("Grouping short hand properties must all be boolean types");
+
+        sp.SetValue(_cmd, true);
     }
 
     private void HandleSingleShortOption(string argument, Queue<string> args)
     {
-        if (_optionDictionary.TryGetValue(argument[1].ToString(), out PropertyInfo shortProperty))
-        {
-            SetValue(shortProperty, argument, args);
-        }
-        else
-        {
+        if (!_optionDictionary.TryGetValue(argument[1].ToString(), out PropertyInfo shortProperty))
             throw new CommandNotFoundException($"{argument[1]} not found");
-        }
+
+        SetValue(shortProperty, argument, args);
     }
 
     private void SetValue(PropertyInfo property, string argument, Queue<string> args)
@@ -105,22 +101,20 @@ internal class OptionParser
         if (property.PropertyType == typeof(bool))
         {
             property.SetValue(_cmd, true);
+            return;
         }
-        else
-        {
-            
-            if (!args.TryPeek(out string result))
-                throw new Exception("No value provided for argument");
 
-            if (result.StartsWith("-") || string.IsNullOrWhiteSpace(result))
-                throw new Exception($"No value provided for {argument}");
+        if (!args.TryPeek(out string result))
+            throw new Exception("No value provided for argument");
 
-            property.SetValue(_cmd, result);
-            _ = args.Dequeue();
-        }
+        if (result.StartsWith("-") || string.IsNullOrWhiteSpace(result))
+            throw new Exception($"No value provided for {argument}");
+
+        property.SetValue(_cmd, result);
+        _ = args.Dequeue();
     }
 
-    private IDictionary<string, PropertyInfo> GetOptionAttributesFromCommandProperties(ICommand cmd)
+    private static IDictionary<string, PropertyInfo> GetOptionAttributesFromCommandProperties(ICommand cmd)
     {
         var optionDictionary = new Dictionary<string, PropertyInfo>();
 
@@ -142,12 +136,5 @@ internal class OptionParser
         }
 
         return optionDictionary;
-    }
-
-    internal OptionParser SetCommand(ICommand cmd)
-    {
-        _cmd = cmd;
-        _optionDictionary = GetOptionAttributesFromCommandProperties(cmd);
-        return this;
     }
 }

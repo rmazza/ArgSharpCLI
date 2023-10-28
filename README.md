@@ -1,63 +1,107 @@
 # ArgSharpCLI
 
-[![main](https://github.com/rmazza/ArgSharpCLI/actions/workflows/dotnet.yml/badge.svg?branch=main)](https://github.com/rmazza/ArgSharpCLI/actions/workflows/dotnet.yml)
+![NuGet](https://img.shields.io/nuget/v/ArgSharpCLI)
+[![Build Status](https://github.com/rmazza/ArgSharpCLI/actions/workflows/dotnet.yml/badge.svg?branch=main)](https://github.com/rmazza/ArgSharpCLI/actions/workflows/dotnet.yml)
 
-## Description
+## Overview
 
-`ArgSharpCLI` is a lightweight and extensible command-line argument parser for C# applications. It makes building robust CLI apps easy and maintainable by embracing SOLID principles.
+`ArgSharpCLI` is a feature-rich, yet lightweight, command-line argument parser designed for C# applications. It's built with SOLID principles, making your CLI apps both easy to develop and maintain.
+
+## Table of Contents
+
+- [Features](#features)
+- [Getting Started](#getting-started)
+  - [Installation](#installation)
+  - [Basic Usage](#basic-usage)
+- [Advanced Usage](#advanced-usage)
+  - [Adding Sub-Commands](#adding-sub-commands)
+  - [Custom Global Help Command](#custom-global-help-command)
+- [Documentation](#documentation)
+- [Contributing](#contributing)
+- [License](#license)
 
 ## Features
 
-- Easy command registration with `CommandBuilder`
-- Support for both short (`-h`) and long (`--help`) option names
-- Adheres to SOLID principles for high maintainability
-- Out-of-the-box support for help commands
-- Extensible for complex use-cases
+- 📦 Out-of-the-box functionality
+- 🛠️ Easy command and sub-command registration
+- 👁️ Support for short (`-h`) and long (`--help`) option names
+- 📘 Built-in help features
+- 🔌 Extensibility for complex scenarios
+- 🌟 SOLID principles for high maintainability
 
-## Installation
+## Getting Started
 
-You can install the package via NuGet (when available):
+### Installation
 
 ```bash
 dotnet add package ArgSharpCLI
 ```
 
-## Usage
-
-### Basic Usage
+## Basic Usage
+The following example demonstrates adding a simple TestCommand class and executing it.
 
 ```csharp
-var commandToRun = new CommandBuilder()
+using ArgSharpCLI;
+
+// Define a simple command
+[Command(Name = "test")]
+public class TestCommand : ICommand
+{
+    [Option("test-option", "t", "test option")]
+    public string? TestOption { get; set; }
+
+    [Option("test-boolean-option", "b", "test boolean option")]
+    public bool TestBooleanOption { get; set; }
+}
+
+// In your Main method
+var command = new CommandBuilder()
     .AddArguments(args)
     .AddCommand<TestCommand>()
     .Build();
 
-// Do something with commandToRun...
+// Execute the built command
+command.Match(
+    Success: cmd => cmd.Run(),
+    Failure: err => Console.WriteLine($"Error: {err}")
+);
 ```
 
-### Adding Custom Commands
+## Advanced Usage
 
-You can easily add custom commands:
+You can organize your commands into sub-commands as shown below:
 
 ```csharp
-var builder = new CommandBuilder()
+using ArgSharpCLI;
+
+// Define the main command
+[Command(Name = "main")]
+public class MainCommand : ICommand
+{
+    // Implementation here
+}
+
+// Define a sub-command
+[Command(Name = "sub")]
+public class SubCommand : ICommand
+{
+    // Implementation here
+}
+
+// In your Main method
+var command = new CommandBuilder()
     .AddArguments(args)
-    .AddCommand<MyCustomCommand>();
+    .AddCommand<MainCommand>(cmd => {
+        cmd.AddSubCommand<SubCommand>();
+    })
+    .Build();
+
+// Execute the command
+command.Run();
+
 ```
-
-### Help Support
-
-`ArgSharpCLI` comes with built-in support for help commands. Just add `-h` or `--help` after your command:
-
-```bash
-$ cli ping -h
-$ cli ping --help
-```
-
-## Contributing
-
-We welcome contributions! Please submit PRs for any enhancements, bug fixes, or features you would like to add.
 
 ## License
 
-MIT License. See [LICENSE](LICENSE) for details.
+This project is licensed under the MIT License. 
+Feel free to copy and paste this markdown into your README.md file, and adjust it as necessary to fit your project.

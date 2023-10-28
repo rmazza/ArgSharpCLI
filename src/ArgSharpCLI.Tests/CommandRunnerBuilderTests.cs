@@ -1,25 +1,26 @@
 using ArgSharpCLI.Commands;
 using ArgSharpCLI.ExceptionHandling;
+using ArgSharpCLI.Tests.Commands;
 using LanguageExt;
 
 namespace ArgSharpCLI.Tests;
 
 public class CommandRunnerBuilderTests
 {
-    private readonly string[] _args = { "test" };
-
-    [Fact]
-    public void Build_WithTestArgument_ReturnsTestCommandInstance()
+    [Theory]
+    [InlineData(new[] { "test" }, typeof(TestCommand))]
+    [InlineData(new[] { "second" }, typeof(SecondCommand))]
+    public void Build_WithTestArgument_AddCommandWithTwoGenerics_ReturnsCommandInstance(string[] args, Type t)
     {
         var commandToRun = new CommandBuilder()
-                .AddArguments(_args)
-                .AddCommand<TestCommand>()
+                .AddArguments(args)
+                .AddCommand<TestCommand, SecondCommand>()
                 .Build();
 
         commandToRun.Match(
                 Succ: command =>
                 {
-                    Assert.IsType<TestCommand>(command);
+                    Assert.IsType(t, command);
                     return Unit.Default;
                 },
                 Fail: ex =>
@@ -30,11 +31,63 @@ public class CommandRunnerBuilderTests
             );
     }
 
+    [Theory]
+    [InlineData(new[] { "test" }, typeof(TestCommand))]
+    [InlineData(new[] { "second" }, typeof(SecondCommand))]
+    [InlineData(new[] { "third" }, typeof(ThirdCommand))]
+    public void Build_WithTestArgument_AddCommandWithThreeGenerics_ReturnsCommandInstance(string[] args, Type t)
+    {
+        var commandToRun = new CommandBuilder()
+                .AddArguments(args)
+                .AddCommand<TestCommand, SecondCommand, ThirdCommand>()
+                .Build();
+
+        commandToRun.Match(
+                Succ: command =>
+                {
+                    Assert.IsType(t, command);
+                    return Unit.Default;
+                },
+                Fail: ex =>
+                {
+                    Assert.Fail(ex.Message);
+                    return Unit.Default;
+                }
+            );
+    }
+
+    [Theory]
+    [InlineData(new[] { "test" }, typeof(TestCommand))]
+    [InlineData(new[] { "second" }, typeof(SecondCommand))]
+    [InlineData(new[] { "third" }, typeof(ThirdCommand))]
+    [InlineData(new[] { "fourth" }, typeof(FourthCommand))]
+    public void Build_WithTestArgument_AddCommandWithFourGenerics_ReturnsCommandInstance(string[] args, Type t)
+    {
+        var commandToRun = new CommandBuilder()
+                .AddArguments(args)
+                .AddCommand<TestCommand, SecondCommand, ThirdCommand, FourthCommand>()
+                .Build();
+
+        commandToRun.Match(
+                Succ: command =>
+                {
+                    Assert.IsType(t, command);
+                    return Unit.Default;
+                },
+                Fail: ex =>
+                {
+                    Assert.Fail(ex.Message);
+                    return Unit.Default;
+                }
+            );
+    }
+
+
     [Fact]
     public void Build_WithTestArgument_ReturnsTestCommand_RunThrowsNotImplementedException()
     {
         var commandToRun = new CommandBuilder()
-                .AddArguments(_args)
+                .AddArguments(new[] {"test"})
                 .AddCommand<TestCommand>()
                 .Build();
 
@@ -228,6 +281,31 @@ public class CommandRunnerBuilderTests
         .AddArguments(args)
         .AddCommand<TestCommand>(subCommandConfig => 
             subCommandConfig.AddSubCommand<SubTestCommand>())
+        .Build()
+        .Match(
+            Succ: command =>
+            {
+                Assert.IsType(typeReturned, command);
+                return Unit.Default;
+            },
+            Fail: error => Unit.Default);
+    }
+
+    [Theory]
+    [InlineData(new[] { "test", "-b", "subcommand" }, typeof(SubTestCommand))]
+    [InlineData(new[] { "test", "subcommand" }, typeof(SubTestCommand))]
+    [InlineData(new[] { "test", "-b" }, typeof(TestCommand))]
+    [InlineData(new[] { "second" }, typeof(SecondCommand))]
+    [InlineData(new[] { "third" }, typeof(ThirdCommand))]
+    [InlineData(new[] { "fourth" }, typeof(FourthCommand))]
+    public void Build_WithTestArgument_ReturnsCorrectCommand(string[] args, Type typeReturned)
+    {
+        var commandToRun = new CommandBuilder()
+        .AddArguments(args)
+        .AddCommand<TestCommand>(subCommandConfig =>
+            subCommandConfig.AddSubCommand<SubTestCommand>())
+        .AddCommand<SecondCommand>()
+        .AddCommand<ThirdCommand, FourthCommand>()
         .Build()
         .Match(
             Succ: command =>
