@@ -3,8 +3,8 @@ using ICommand = ArgSharpCLI.Interfaces.ICommand;
 
 namespace ArgSharpCLI.Tests.Commands;
 
-[Command("test", Description = "Test command.")]
-public class TestCommand : ICommand
+[Command("second", Description = "Test command.")]
+public class SecondCommand : ICommand
 {
     [Option("test-option", "t", "test option")]
     public string? TestOption { get; set; }
