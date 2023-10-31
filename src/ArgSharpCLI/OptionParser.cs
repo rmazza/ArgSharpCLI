@@ -3,7 +3,6 @@ using ArgSharpCLI.Extensions;
 using ArgSharpCLI.Interfaces;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace ArgSharpCLI;

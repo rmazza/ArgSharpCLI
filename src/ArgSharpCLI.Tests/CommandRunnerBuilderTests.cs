@@ -1,7 +1,8 @@
 using ArgSharpCLI.Commands;
 using ArgSharpCLI.ExceptionHandling;
 using ArgSharpCLI.Tests.Commands;
-using LanguageExt;
+using ArgSharpCLI.Extensions;
+using Microsoft.VisualStudio.TestPlatform.TestExecutor;
 
 namespace ArgSharpCLI.Tests;
 
@@ -18,17 +19,12 @@ public class CommandRunnerBuilderTests
                 .Build();
 
         commandToRun.Match(
-                Succ: command =>
-                {
-                    Assert.IsType(t, command);
-                    return Unit.Default;
-                },
-                Fail: ex =>
-                {
-                    Assert.Fail(ex.Message);
-                    return Unit.Default;
-                }
-            );
+            onSuccess: command =>
+            {
+                Assert.IsType(t, command);
+                return 1;
+            },
+            onFailure: ex => 1);
     }
 
     [Theory]
@@ -43,15 +39,15 @@ public class CommandRunnerBuilderTests
                 .Build();
 
         commandToRun.Match(
-                Succ: command =>
+                onSuccess: command =>
                 {
                     Assert.IsType(t, command);
-                    return Unit.Default;
+                    return 1;
                 },
-                Fail: ex =>
+                onFailure: ex =>
                 {
-                    Assert.Fail(ex.Message);
-                    return Unit.Default;
+                    Assert.Fail(ex.Description);
+                    return 1;
                 }
             );
     }
@@ -69,15 +65,15 @@ public class CommandRunnerBuilderTests
                 .Build();
 
         commandToRun.Match(
-                Succ: command =>
+                onSuccess: command =>
                 {
                     Assert.IsType(t, command);
-                    return Unit.Default;
+                    return 1;
                 },
-                Fail: ex =>
+                onFailure: ex =>
                 {
-                    Assert.Fail(ex.Message);
-                    return Unit.Default;
+                    Assert.Fail(ex.Description);
+                    return 1;
                 }
             );
     }
@@ -92,16 +88,16 @@ public class CommandRunnerBuilderTests
                 .Build();
 
         commandToRun.Match(
-            Succ: command =>
+            onSuccess: command =>
             {
                 Assert.Throws<NotImplementedException>(() => command.Run());
-                return Unit.Default;
+                return 1;
             },
-            Fail: ex =>
+            onFailure: ex =>
             {
 
-                Assert.Fail(ex.Message);
-                return Unit.Default;
+                Assert.Fail(ex.Description);
+                return 1;
             }
         );
     }
@@ -117,20 +113,20 @@ public class CommandRunnerBuilderTests
                 .Build();
 
         commandToRun.Match(
-            Succ: command =>
+            onSuccess: command =>
             {
                 Assert.IsType<TestCommand>(command);
                 if (command is TestCommand testCommand)
                 {
                     Assert.Equal(expectedOptionValue, testCommand.TestOption);
                 }
-                return Unit.Default;
+                return 1;
             },
-            Fail: ex =>
+            onFailure: ex =>
             {
 
-                Assert.Fail(ex.Message);
-                return Unit.Default;
+                Assert.Fail(ex.Description);
+                return 1;
             }
         );
     }
@@ -165,20 +161,20 @@ public class CommandRunnerBuilderTests
                 .Build();
 
         commandToRun.Match(
-            Succ: command =>
+            onSuccess: command =>
             {
                 Assert.IsType<TestCommand>(command);
                 if (command is TestCommand testCommand)
                 {
                     Assert.Equal(expectedOptionValue, testCommand.TestBooleanOption1);
                 }
-                return Unit.Default;
+                return 1;
             },
-            Fail: ex =>
+            onFailure: ex =>
             {
 
-                Assert.Fail(ex.Message);
-                return Unit.Default;
+                Assert.Fail(ex.Description);
+                return 1;
             }
         );
     }
@@ -204,7 +200,7 @@ public class CommandRunnerBuilderTests
                 .Build();
 
         commandToRun.Match(
-            Succ: command =>
+            onSuccess: command =>
             {
                 Assert.IsType<TestCommand>(command);
                 if (command is TestCommand testCommand)
@@ -217,13 +213,13 @@ public class CommandRunnerBuilderTests
                     if (expectedBooleanOption2 is not null)
                         Assert.Equal(expectedBooleanOption2, testCommand.TestBooleanOption2);
                 }
-                return Unit.Default;
+                return 1;
             },
-            Fail: ex =>
+            onFailure: ex =>
             {
 
-                Assert.Fail(ex.Message);
-                return Unit.Default;
+                Assert.Fail(ex.Description);
+                return 1;
             }
         );
     }
@@ -242,13 +238,13 @@ public class CommandRunnerBuilderTests
         .AddCommand<TestCommand>()
         .Build()
         .Match(
-            Succ: command =>
+            onSuccess: command =>
             {
                 Assert.IsType(typeReturned, command);
                 command.Run();
-                return Unit.Default;
+                return 1;
             },
-            Fail: error => Unit.Default);
+            onFailure: error => 1);
     }
 
     [Theory]
@@ -263,13 +259,13 @@ public class CommandRunnerBuilderTests
             config.AddSubCommand<SubTestCommand>())
         .Build()
         .Match(
-            Succ: command =>
+            onSuccess: command =>
             {
                 Assert.IsType(typeReturned, command);
                 command.Run();
-                return Unit.Default;
+                return 1;
             },
-            Fail: error => Unit.Default);
+            onFailure: error => 1);
     }
 
     [Theory]
@@ -283,12 +279,12 @@ public class CommandRunnerBuilderTests
             subCommandConfig.AddSubCommand<SubTestCommand>())
         .Build()
         .Match(
-            Succ: command =>
+            onSuccess: command =>
             {
                 Assert.IsType(typeReturned, command);
-                return Unit.Default;
+                return 1;
             },
-            Fail: error => Unit.Default);
+            onFailure: error => 1);
     }
 
     [Theory]
@@ -308,11 +304,11 @@ public class CommandRunnerBuilderTests
         .AddCommand<ThirdCommand, FourthCommand>()
         .Build()
         .Match(
-            Succ: command =>
+            onSuccess: command =>
             {
                 Assert.IsType(typeReturned, command);
-                return Unit.Default;
+                return 1;
             },
-            Fail: error => Unit.Default);
+            onFailure: error => 1);
     }
 }

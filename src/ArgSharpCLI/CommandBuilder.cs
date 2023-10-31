@@ -1,9 +1,8 @@
 ﻿using ArgSharpCLI.Attributes;
 using ArgSharpCLI.Commands;
+using ArgSharpCLI.Core;
 using ArgSharpCLI.ExceptionHandling;
 using ArgSharpCLI.Interfaces;
-using LanguageExt;
-using LanguageExt.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -83,7 +82,7 @@ public class CommandBuilder : ICommandBuilder
         return this;
     }
 
-    public Result<ICommand> Build()
+    public CommandResult<ICommand> Build()
     {
         ICommand command = GetCommandFromQueue(_argumentQueue, _commands);
 
@@ -100,7 +99,7 @@ public class CommandBuilder : ICommandBuilder
             command = BuildOptions(command);
         }
 
-        return new Result<ICommand>(command);
+        return CommandResult<ICommand>.Success(command);
     }
 
     private ICommand BuildOptions(ICommand command)

@@ -1,4 +1,4 @@
-﻿using LanguageExt.Common;
+﻿using ArgSharpCLI.Core;
 using System;
 
 namespace ArgSharpCLI.Interfaces
@@ -23,6 +23,6 @@ namespace ArgSharpCLI.Interfaces
             where T4 : ICommand;
 
         ICommandBuilder AddCommand<T>(Action<ICommandConfig> addSubCommands) where T : ICommand;
-        Result<ICommand> Build();
+        CommandResult<ICommand> Build();
     }
 }
