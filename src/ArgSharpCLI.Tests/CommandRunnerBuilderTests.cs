@@ -18,7 +18,7 @@ public class CommandRunnerBuilderTests
                 .AddCommand<TestCommand, SecondCommand>()
                 .Build();
 
-        commandToRun.Match(
+        commandToRun.MatchResult(
             onSuccess: command =>
             {
                 Assert.IsType(t, command);
@@ -38,7 +38,7 @@ public class CommandRunnerBuilderTests
                 .AddCommand<TestCommand, SecondCommand, ThirdCommand>()
                 .Build();
 
-        commandToRun.Match(
+        commandToRun.MatchResult(
                 onSuccess: command =>
                 {
                     Assert.IsType(t, command);
@@ -64,7 +64,7 @@ public class CommandRunnerBuilderTests
                 .AddCommand<TestCommand, SecondCommand, ThirdCommand, FourthCommand>()
                 .Build();
 
-        commandToRun.Match(
+        commandToRun.MatchResult(
                 onSuccess: command =>
                 {
                     Assert.IsType(t, command);
@@ -87,7 +87,7 @@ public class CommandRunnerBuilderTests
                 .AddCommand<TestCommand>()
                 .Build();
 
-        commandToRun.Match(
+        commandToRun.MatchResult(
             onSuccess: command =>
             {
                 Assert.Throws<NotImplementedException>(() => command.Run());
@@ -112,7 +112,7 @@ public class CommandRunnerBuilderTests
                 .AddCommand<TestCommand>()
                 .Build();
 
-        commandToRun.Match(
+        commandToRun.MatchResult(
             onSuccess: command =>
             {
                 Assert.IsType<TestCommand>(command);
@@ -160,7 +160,7 @@ public class CommandRunnerBuilderTests
                 .AddCommand<TestCommand>()
                 .Build();
 
-        commandToRun.Match(
+        commandToRun.MatchResult(
             onSuccess: command =>
             {
                 Assert.IsType<TestCommand>(command);
@@ -199,7 +199,7 @@ public class CommandRunnerBuilderTests
                 .AddCommand<TestCommand>()
                 .Build();
 
-        commandToRun.Match(
+        commandToRun.MatchResult(
             onSuccess: command =>
             {
                 Assert.IsType<TestCommand>(command);
@@ -237,7 +237,7 @@ public class CommandRunnerBuilderTests
         .AddArguments(args)
         .AddCommand<TestCommand>()
         .Build()
-        .Match(
+        .MatchResult(
             onSuccess: command =>
             {
                 Assert.IsType(typeReturned, command);
@@ -258,7 +258,7 @@ public class CommandRunnerBuilderTests
         .AddCommand<TestCommand>(config => 
             config.AddSubCommand<SubTestCommand>())
         .Build()
-        .Match(
+        .MatchResult(
             onSuccess: command =>
             {
                 Assert.IsType(typeReturned, command);
@@ -278,7 +278,7 @@ public class CommandRunnerBuilderTests
         .AddCommand<TestCommand>(subCommandConfig => 
             subCommandConfig.AddSubCommand<SubTestCommand>())
         .Build()
-        .Match(
+        .MatchResult(
             onSuccess: command =>
             {
                 Assert.IsType(typeReturned, command);
@@ -303,7 +303,7 @@ public class CommandRunnerBuilderTests
         .AddCommand<SecondCommand>()
         .AddCommand<ThirdCommand, FourthCommand>()
         .Build()
-        .Match(
+        .MatchResult(
             onSuccess: command =>
             {
                 Assert.IsType(typeReturned, command);

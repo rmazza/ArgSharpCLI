@@ -6,7 +6,7 @@ namespace ArgSharpCLI.Extensions;
 
 public static class CommandResultExtensions
 {
-    public static T2 Match<T, T2>(
+    public static T2 MatchResult<T, T2>(
         this CommandResult<T> result,
         Func<T, T2> onSuccess,
         Func<Error, T2> onFailure)
