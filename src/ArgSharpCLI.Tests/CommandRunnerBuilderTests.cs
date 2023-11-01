@@ -248,6 +248,7 @@ public class CommandRunnerBuilderTests
     }
 
     [Theory]
+    [InlineData(new[] { "test", "-bz", "--help" }, typeof(HelpCommand))]
     [InlineData(new[] { "test", "-bz", "subcommand", "--help" }, typeof(HelpCommand))]
     [InlineData(new[] { "test", "subcommand", "--help" }, typeof(HelpCommand))]
     [InlineData(new[] { "test", "subcommand", "-h" }, typeof(HelpCommand))]

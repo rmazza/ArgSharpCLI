@@ -53,6 +53,19 @@ public class HelpCommand : ICommand
             sb.AppendLine($"  {paddedOption}      {optionAttr.Description}");
         }
 
+        if (_subCommands.Any())
+        {
+            sb.AppendLine();
+            sb.AppendLine("Commands:");
+
+            foreach (var subCommand in _subCommands)
+            {
+                var commandAttr = subCommand.Value.GetCommandAttribute();
+                var paddedOption = commandAttr.Name.PadRight(maxOptionLength);
+                sb.AppendLine($"  {paddedOption}      {commandAttr.Description}");
+            }
+        }
+
         return sb.ToString();
     }
 }
