@@ -15,6 +15,8 @@ internal class OptionParser
 
     public OptionParser(ICommand command, Queue<string> arguments)
     {
+        Ensure.IsNotNull(command, "Command cannot be null");
+
         _cmd = command;
         _arguments = arguments;
         _optionDictionary = GetOptionAttributesFromCommandProperties(command);
@@ -22,8 +24,6 @@ internal class OptionParser
 
     public ICommand BuildOptions(Func<ICommand, ICommand> helpFunction)
     {
-        Ensure.IsNotNull(_cmd, "Command cannot be null");
-
         while (_arguments.Count > 0)
         {
             _arguments.TryPeek(out string argument);
