@@ -1,4 +1,6 @@
-﻿namespace ArgSharpCLI.ExceptionHandling;
+﻿using System;
+
+namespace ArgSharpCLI.ExceptionHandling;
 
 public sealed record Error(string Code, string Description)
 {

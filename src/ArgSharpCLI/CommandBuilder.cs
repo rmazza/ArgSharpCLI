@@ -115,7 +115,7 @@ public class CommandBuilder : ICommandBuilder
                 {
                     EmptyCommand => GenerateGlobalHelp(_commands),
                     ICommand => GenerateSpecificHelp(cmd),
-                    _ => throw new Exception("Test")
+                    _ => throw new Exception("Help Command not found")
                 };
 
     private void AddTypeToCommandDictionary(Type[] commandTypes)

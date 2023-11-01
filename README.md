@@ -62,8 +62,8 @@ var command = new CommandBuilder()
 
 // Execute the built command
 command.Match(
-    Success: cmd => cmd.Run(),
-    Failure: err => Console.WriteLine($"Error: {err}")
+    onSuccess: cmd => cmd.Run(),
+    onFailure: err => Console.WriteLine($"Error: {err}")
 );
 ```
 
@@ -97,7 +97,11 @@ var command = new CommandBuilder()
     .Build();
 
 // Execute the command
-command.Run();
+// Execute the built command
+command.Match(
+    onSuccess: cmd => cmd.Run(),
+    onFailure: err => Console.WriteLine($"Error: {err}")
+);
 
 ```
 
