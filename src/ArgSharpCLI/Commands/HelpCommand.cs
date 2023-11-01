@@ -1,6 +1,7 @@
 ﻿using ArgSharpCLI.Extensions;
 using ArgSharpCLI.Interfaces;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -10,10 +11,12 @@ namespace ArgSharpCLI.Commands;
 public class HelpCommand : ICommand
 {
     private readonly ICommand _innerCommand;
+    private readonly Dictionary<string, Type> _subCommands;
 
-    public HelpCommand(ICommand innerCommand)
+    public HelpCommand(ICommand innerCommand, Dictionary<string, Type> subCommands)
     {
         _innerCommand = innerCommand;
+        _subCommands = subCommands;
     }
 
     public void Run()
