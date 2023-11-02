@@ -53,7 +53,7 @@ public class HelpCommand : ICommand
             sb.AppendLine($"  {paddedOption}      {optionAttr.Description}");
         }
 
-        if (_subCommands.Any())
+        if (_subCommands?.Any() ?? false)
         {
             sb.AppendLine();
             sb.AppendLine("Commands:");
