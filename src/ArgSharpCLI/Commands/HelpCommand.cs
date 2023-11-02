@@ -1,6 +1,7 @@
 ﻿using ArgSharpCLI.Extensions;
 using ArgSharpCLI.Interfaces;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -10,10 +11,12 @@ namespace ArgSharpCLI.Commands;
 public class HelpCommand : ICommand
 {
     private readonly ICommand _innerCommand;
+    private readonly Dictionary<string, Type> _subCommands;
 
-    public HelpCommand(ICommand innerCommand)
+    public HelpCommand(ICommand innerCommand, Dictionary<string, Type> subCommands)
     {
         _innerCommand = innerCommand;
+        _subCommands = subCommands;
     }
 
     public void Run()
@@ -48,6 +51,19 @@ public class HelpCommand : ICommand
             var optionAttr = option.GetOptionAttribute();
             var paddedOption = optionAttr.ToString().PadRight(maxOptionLength);
             sb.AppendLine($"  {paddedOption}      {optionAttr.Description}");
+        }
+
+        if (_subCommands?.Any() ?? false)
+        {
+            sb.AppendLine();
+            sb.AppendLine("Commands:");
+
+            foreach (var subCommand in _subCommands)
+            {
+                var commandAttr = subCommand.Value.GetCommandAttribute();
+                var paddedOption = commandAttr.Name.PadRight(maxOptionLength);
+                sb.AppendLine($"  {paddedOption}      {commandAttr.Description}");
+            }
         }
 
         return sb.ToString();

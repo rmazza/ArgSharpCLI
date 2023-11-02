@@ -10,14 +10,14 @@ internal class CommandConfig : ICommandConfig
 {
     private readonly Dictionary<string, Type> _subCommands = new();
 
-    public ICommandConfig AddSubCommand<T2>()
+    public ICommandConfig AddSubCommand<T>()
     {
-        if (typeof(T2)
+        if (typeof(T)
             .GetCustomAttributes(false)
             .SingleOrDefault(attr => attr is CommandAttribute) is not CommandAttribute attribute)
-            throw new InvalidOperationException($"The type {typeof(T2).Name} must have a {nameof(CommandAttribute)}.");
+            throw new InvalidOperationException($"The type {typeof(T).Name} must have a {nameof(CommandAttribute)}.");
 
-        _subCommands.Add(attribute.Name, typeof(T2));
+        _subCommands.Add(attribute.Name, typeof(T));
 
         return this;
     }

@@ -1,9 +1,8 @@
 ﻿using ArgSharpCLI.Attributes;
 using ArgSharpCLI.Commands;
+using ArgSharpCLI.Core;
 using ArgSharpCLI.ExceptionHandling;
 using ArgSharpCLI.Interfaces;
-using LanguageExt;
-using LanguageExt.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -83,7 +82,7 @@ public class CommandBuilder : ICommandBuilder
         return this;
     }
 
-    public Result<ICommand> Build()
+    public CommandResult<ICommand> Build()
     {
         ICommand command = GetCommandFromQueue(_argumentQueue, _commands);
 
@@ -100,7 +99,7 @@ public class CommandBuilder : ICommandBuilder
             command = BuildOptions(command);
         }
 
-        return new Result<ICommand>(command);
+        return CommandResult<ICommand>.Success(command);
     }
 
     private ICommand BuildOptions(ICommand command)
@@ -110,14 +109,19 @@ public class CommandBuilder : ICommandBuilder
         return command;
     }
 
-    private Func<ICommand, ICommand> MapHelpCommand() =>
-            cmd =>
-                cmd switch
-                {
-                    EmptyCommand => GenerateGlobalHelp(_commands),
-                    ICommand => GenerateSpecificHelp(cmd),
-                    _ => throw new Exception("Test")
-                };
+    private Func<ICommand, ICommand> MapHelpCommand()
+    {
+        return cmd =>
+        {
+            _subCommands.TryGetValue(cmd.GetType(), out Dictionary<string, Type> subCommands);
+            return cmd switch
+            {
+                EmptyCommand => GenerateGlobalHelp(_commands),
+                ICommand => GenerateSpecificHelp(cmd, subCommands),
+                _ => throw new Exception("Help Command not found")
+            };
+        };
+    }
 
     private void AddTypeToCommandDictionary(Type[] commandTypes)
     {
@@ -134,9 +138,10 @@ public class CommandBuilder : ICommandBuilder
     private static ICommand GenerateGlobalHelp(Dictionary<string, Type> commands) =>
         new GlobalHelpCommand(commands);
 
-    private static ICommand GenerateSpecificHelp(ICommand cmd)
+    private static ICommand GenerateSpecificHelp(ICommand cmd, Dictionary<string, Type> subCommands)
     {
-        return new HelpCommand(cmd);
+        
+        return new HelpCommand(cmd, subCommands);
     }
 
     private static ICommand GetCommandFromQueue(Queue<string> argumentQueue, Dictionary<string, Type> commands)

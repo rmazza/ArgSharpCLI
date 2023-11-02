@@ -14,4 +14,3 @@ public static class StringExtensions
     public static bool IsShortOption(this string str) => 
         str.StartsWith("-");
 }
-
